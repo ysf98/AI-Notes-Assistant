@@ -32,6 +32,16 @@ Use exactly one of these shapes:
 
 const DEFAULT_MODEL = process.env.OPENAI_MODEL ?? 'gpt-4o-mini'
 const FALLBACK_MODEL = 'gpt-4.1-mini'
+const parsePositiveInt = (value: string | undefined, fallback: number): number => {
+  const parsed = Number.parseInt(value ?? '', 10)
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback
+}
+
+const MAX_OUTPUT_TOKENS = parsePositiveInt(process.env.OPENAI_MAX_OUTPUT_TOKENS, 200)
+const MAX_MESSAGE_CHARS = parsePositiveInt(process.env.OPENAI_MAX_MESSAGE_CHARS, 800)
+const MAX_NOTE_CHARS = parsePositiveInt(process.env.OPENAI_MAX_NOTE_CHARS, 3000)
+
+const clampText = (value: string, maxChars: number): string => (value.length > maxChars ? value.slice(0, maxChars) : value)
 
 const extractOutputText = (data: OpenAiResponsesSuccess): string | null => {
   if (typeof data.output_text === 'string' && data.output_text.trim()) return data.output_text
@@ -56,8 +66,11 @@ export default async function handler(req: { method?: string; body?: ChatRequest
   const apiKey = process.env.OPENAI_API_KEY
   if (!apiKey) return res.status(500).json({ action: 'unknown', message: 'Server misconfigured' })
 
-  const message = req.body?.message?.trim()
-  if (!message) return res.status(400).json({ action: 'unknown', message: 'Invalid request' })
+  const rawMessage = req.body?.message?.trim()
+  if (!rawMessage) return res.status(400).json({ action: 'unknown', message: 'Invalid request' })
+
+  const message = clampText(rawMessage, MAX_MESSAGE_CHARS)
+  const noteContent = clampText((req.body?.note?.content ?? '').trim(), MAX_NOTE_CHARS)
 
   try {
     const callResponsesApi = async (model: string) =>
@@ -66,9 +79,10 @@ export default async function handler(req: { method?: string; body?: ChatRequest
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },
         body: JSON.stringify({
           model,
+          max_output_tokens: MAX_OUTPUT_TOKENS,
           input: [
             { role: 'system', content: [{ type: 'input_text', text: systemPrompt }] },
-            { role: 'user', content: [{ type: 'input_text', text: `Message: ${message}\nNote: ${req.body?.note?.content ?? ''}` }] },
+            { role: 'user', content: [{ type: 'input_text', text: `Message: ${message}\nNote: ${noteContent}` }] },
           ],
         }),
       })
