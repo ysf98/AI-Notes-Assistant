@@ -65,6 +65,20 @@ function App() {
         createNote({ title: aiResponse.title, content: aiResponse.content, category: aiResponse.category })
         assistantText = `He creado la nota "${aiResponse.title}".`
       }
+      if (aiResponse.action === 'edit_note') {
+        if (!selectedNote) {
+          assistantText = 'Selecciona una nota antes de pedir una edición.'
+        } else {
+          const updatedNote = {
+            ...selectedNote,
+            ...(aiResponse.title ? { title: aiResponse.title } : {}),
+            ...(aiResponse.content ? { content: aiResponse.content } : {}),
+            ...(aiResponse.category ? { category: aiResponse.category } : {}),
+          }
+          upsertNote(updatedNote)
+          assistantText = 'He actualizado la nota seleccionada.'
+        }
+      }
 
       if (aiResponse.action === 'summarize_note') assistantText = `Resumen:\n${aiResponse.summary}`
       if (aiResponse.action === 'convert_to_tasks') assistantText = `Tareas:\n${aiResponse.tasks.map((task) => `- [ ] ${task}`).join('\n')}`

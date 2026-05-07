@@ -12,13 +12,18 @@ describe('parseAiAssistantResponse', () => {
     expect(result.action).toBe('summarize_note')
   })
 
-  it('falla con payload inválido', () => {
+  it('valida edit_note', () => {
+    const result = parseAiAssistantResponse({ action: 'edit_note', title: 'Nuevo titulo', content: 'Nuevo contenido' })
+    expect(result.action).toBe('edit_note')
+    if (result.action === 'edit_note') expect(result.title).toBe('Nuevo titulo')
+  })
+
+  it('falla con payload invalido', () => {
     expect(() => parseAiAssistantResponse({ action: 'create_note', title: 'A' })).toThrowError()
   })
-})
 
-
-it('valida unknown', () => {
-  const result = parseAiAssistantResponse({ action: 'unknown', message: 'No entiendo' })
-  expect(result.action).toBe('unknown')
+  it('valida unknown', () => {
+    const result = parseAiAssistantResponse({ action: 'unknown', message: 'No entiendo' })
+    expect(result.action).toBe('unknown')
+  })
 })

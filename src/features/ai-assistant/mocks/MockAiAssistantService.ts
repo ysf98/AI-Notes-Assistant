@@ -14,10 +14,17 @@ export class MockAiAssistantService implements AiAssistantService {
     if (normalized.includes('resume la nota actual') || normalized.includes('resume esta nota')) return { action: 'summarize_note', summary: firstSentence(context.selectedNoteContent ?? 'No hay nota seleccionada.') }
     if (normalized.includes('convierte esta nota en tareas')) {
       const base = (context.selectedNoteContent ?? '').split(/\n|\.|;/).map((line) => line.trim()).filter(Boolean).slice(0, 4)
-      return { action: 'convert_to_tasks', tasks: base.length ? base : ['Definir objetivo', 'Agregar próximos pasos'] }
+      return { action: 'convert_to_tasks', tasks: base.length ? base : ['Definir objetivo', 'Agregar proximos pasos'] }
     }
-    if (normalized.includes('propón un título para esta nota') || normalized.includes('propon un título para esta nota')) return { action: 'suggest_title', title: context.selectedNoteTitle ? `Título sugerido: ${context.selectedNoteTitle}` : 'Título sugerido para la nota' }
+    if (normalized.includes('edita esta nota') || normalized.includes('actualiza esta nota')) {
+      return {
+        action: 'edit_note',
+        title: context.selectedNoteTitle ? `${context.selectedNoteTitle} (editada)` : 'Nota editada',
+        content: `${context.selectedNoteContent ?? 'Contenido'}\n\nActualizada por el asistente.`,
+      }
+    }
+    if (normalized.includes('propon un titulo para esta nota') || normalized.includes('propón un título para esta nota')) return { action: 'suggest_title', title: context.selectedNoteTitle ? `Titulo sugerido: ${context.selectedNoteTitle}` : 'Titulo sugerido para la nota' }
     if (normalized.includes('clasifica esta nota')) return { action: 'classify_note', category: categories.includes('Trabajo') ? 'Trabajo' : categories[0] }
-    return { action: 'unknown', message: 'No entendí la instrucción. Prueba con crear, resumir, tareas, título o clasificar.' }
+    return { action: 'unknown', message: 'No entendi la instruccion. Prueba con crear, editar, resumir, tareas, titulo o clasificar.' }
   }
 }

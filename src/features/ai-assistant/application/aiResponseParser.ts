@@ -22,6 +22,19 @@ export const parseAiAssistantResponse = (payload: unknown): AiAssistantResponse 
     case 'classify_note':
       if (typeof payload.category !== 'string' || !categories.includes(payload.category as NoteCategory)) throw new Error('Invalid classify_note response')
       return { action: 'classify_note', category: payload.category as NoteCategory }
+    case 'edit_note': {
+      const hasTitle = typeof payload.title === 'string'
+      const hasContent = typeof payload.content === 'string'
+      const hasCategory = typeof payload.category === 'string'
+      if (!hasTitle && !hasContent && !hasCategory) throw new Error('Invalid edit_note response')
+      if (hasCategory && !categories.includes(payload.category as NoteCategory)) throw new Error('Invalid edit_note response')
+      return {
+        action: 'edit_note',
+        ...(hasTitle ? { title: payload.title as string } : {}),
+        ...(hasContent ? { content: payload.content as string } : {}),
+        ...(hasCategory ? { category: payload.category as NoteCategory } : {}),
+      }
+    }
     case 'unknown':
       if (typeof payload.message !== 'string') throw new Error('Invalid unknown response')
       return { action: 'unknown', message: payload.message }

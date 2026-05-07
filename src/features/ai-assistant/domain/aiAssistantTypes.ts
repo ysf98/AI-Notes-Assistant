@@ -13,6 +13,7 @@ export interface SummarizeNoteResponse { action: 'summarize_note'; summary: stri
 export interface ConvertToTasksResponse { action: 'convert_to_tasks'; tasks: string[] }
 export interface SuggestTitleResponse { action: 'suggest_title'; title: string }
 export interface ClassifyNoteResponse { action: 'classify_note'; category: NoteCategory }
+export interface EditNoteResponse { action: 'edit_note'; title?: string; content?: string; category?: NoteCategory }
 export interface UnknownResponse { action: 'unknown'; message: string }
 
 export type AiAssistantResponse =
@@ -21,4 +22,5 @@ export type AiAssistantResponse =
   | ConvertToTasksResponse
   | SuggestTitleResponse
   | ClassifyNoteResponse
+  | EditNoteResponse
   | UnknownResponse
