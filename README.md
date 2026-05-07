@@ -64,6 +64,23 @@ npm run build    # build de producción
 npm run preview  # previsualización del build
 ```
 
+
+## ✅ Testing
+
+Este proyecto usa **Vitest + React Testing Library + user-event + jsdom**.
+
+```bash
+npm run test
+npm run test:watch
+npm run test:coverage
+```
+
+Cobertura objetivo:
+
+- 80% funciones utilitarias
+- 70% componentes principales
+- 100% persistencia y parseo del chatbot
+
 ## 📸 Screenshots
 
 Puedes añadir capturas en `docs/screenshots/` y enlazarlas aquí.

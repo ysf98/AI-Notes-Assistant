@@ -12,10 +12,11 @@ interface NotesSidebarProps {
 
 export const NotesSidebar = ({ notes, selectedId, query, onQueryChange, onSelect, onCreate, onDelete }: NotesSidebarProps) => (
   <aside className="w-full lg:w-80 bg-slate-900 border-r border-slate-800 p-4 space-y-4">
-    <button onClick={onCreate} className="w-full rounded-lg bg-cyan-500 px-4 py-2 font-medium text-slate-950 hover:bg-cyan-400">
+    <button aria-label="Nueva nota" onClick={onCreate} className="w-full rounded-lg bg-cyan-500 px-4 py-2 font-medium text-slate-950 hover:bg-cyan-400">
       + Nueva nota
     </button>
     <input
+      aria-label="Buscar notas"
       value={query}
       onChange={(e) => onQueryChange(e.target.value)}
       placeholder="Buscar notas..."
