@@ -1,5 +1,3 @@
-import { parseAiAssistantResponse } from '../src/features/ai-assistant/application/aiResponseParser'
-
 export const config = { runtime: 'nodejs' }
 
 interface ChatRequestBody {
@@ -21,6 +19,17 @@ interface OpenAiResponsesSuccess {
   }>
 }
 
+type NoteCategory = 'General' | 'Trabajo' | 'Estudio' | 'Ideas' | 'Personal'
+
+type ApiResponse =
+  | { action: 'create_note'; title: string; content: string; category: NoteCategory }
+  | { action: 'summarize_note'; summary: string }
+  | { action: 'convert_to_tasks'; tasks: string[] }
+  | { action: 'suggest_title'; title: string }
+  | { action: 'classify_note'; category: NoteCategory }
+  | { action: 'edit_note'; title?: string; content?: string; category?: NoteCategory }
+  | { action: 'unknown'; message: string }
+
 const systemPrompt = `You are an AI Notes Assistant. Return valid JSON only. No markdown.
 Use exactly one of these shapes:
 {"action":"create_note","title":"...","content":"...","category":"General|Trabajo|Estudio|Ideas|Personal"}
@@ -34,6 +43,7 @@ Use exactly one of these shapes:
 
 const DEFAULT_MODEL = 'gpt-4o-mini'
 const FALLBACK_MODEL = 'gpt-4.1-mini'
+const categories: NoteCategory[] = ['General', 'Trabajo', 'Estudio', 'Ideas', 'Personal']
 
 const parsePositiveInt = (value: string | undefined, fallback: number): number => {
   const parsed = Number.parseInt(value ?? '', 10)
@@ -67,6 +77,42 @@ const extractOutputText = (data: OpenAiResponsesSuccess): string | null => {
 const shouldRetryWithFallback = (status: number, errorData: OpenAiErrorResponse): boolean => {
   const message = (errorData.error?.message ?? '').toLowerCase()
   return status === 404 || message.includes('model') || errorData.error?.code === 'model_not_found'
+}
+
+const isObject = (value: unknown): value is Record<string, unknown> => Boolean(value) && typeof value === 'object' && !Array.isArray(value)
+
+const parseAiResponse = (payload: unknown): ApiResponse => {
+  if (!isObject(payload) || typeof payload.action !== 'string') return { action: 'unknown', message: 'Invalid AI response' }
+
+  switch (payload.action) {
+    case 'create_note':
+      if (typeof payload.title !== 'string' || typeof payload.content !== 'string' || typeof payload.category !== 'string' || !categories.includes(payload.category as NoteCategory)) return { action: 'unknown', message: 'Invalid create_note response' }
+      return { action: 'create_note', title: payload.title, content: payload.content, category: payload.category as NoteCategory }
+    case 'summarize_note':
+      return typeof payload.summary === 'string' ? { action: 'summarize_note', summary: payload.summary } : { action: 'unknown', message: 'Invalid summarize_note response' }
+    case 'convert_to_tasks':
+      return Array.isArray(payload.tasks) && payload.tasks.every((task) => typeof task === 'string') ? { action: 'convert_to_tasks', tasks: payload.tasks } : { action: 'unknown', message: 'Invalid convert_to_tasks response' }
+    case 'suggest_title':
+      return typeof payload.title === 'string' ? { action: 'suggest_title', title: payload.title } : { action: 'unknown', message: 'Invalid suggest_title response' }
+    case 'classify_note':
+      return typeof payload.category === 'string' && categories.includes(payload.category as NoteCategory) ? { action: 'classify_note', category: payload.category as NoteCategory } : { action: 'unknown', message: 'Invalid classify_note response' }
+    case 'edit_note': {
+      const hasTitle = typeof payload.title === 'string'
+      const hasContent = typeof payload.content === 'string'
+      const hasCategory = typeof payload.category === 'string' && categories.includes(payload.category as NoteCategory)
+      if (!hasTitle && !hasContent && !hasCategory) return { action: 'unknown', message: 'Invalid edit_note response' }
+      return {
+        action: 'edit_note',
+        ...(hasTitle ? { title: payload.title as string } : {}),
+        ...(hasContent ? { content: payload.content as string } : {}),
+        ...(hasCategory ? { category: payload.category as NoteCategory } : {}),
+      }
+    }
+    case 'unknown':
+      return typeof payload.message === 'string' ? { action: 'unknown', message: payload.message } : { action: 'unknown', message: 'Invalid unknown response' }
+    default:
+      return { action: 'unknown', message: 'Unsupported AI action' }
+  }
 }
 
 export default async function handler(req: { method?: string; body?: ChatRequestBody }, res: { status: (n: number) => { json: (v: unknown) => void } }) {
@@ -116,7 +162,7 @@ export default async function handler(req: { method?: string; body?: ChatRequest
 
     const data = (await openAiResponse.json()) as OpenAiResponsesSuccess
     const outputText = extractOutputText(data) ?? '{"action":"unknown","message":"No response"}'
-    const parsed = parseAiAssistantResponse(JSON.parse(outputText))
+    const parsed = parseAiResponse(JSON.parse(outputText))
     return res.status(200).json(parsed)
   } catch {
     return res.status(500).json({ action: 'unknown', message: 'Internal server error' })
