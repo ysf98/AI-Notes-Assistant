@@ -19,13 +19,14 @@ export const ChatPanel = ({ messages, value, onChange, onSend }: ChatPanelProps)
     </div>
     <div className="mt-3 space-y-2">
       <textarea
+        aria-label="Comando del asistente"
         value={value}
         onChange={(e) => onChange(e.target.value)}
         rows={3}
         placeholder='Ej: "crea una nota sobre arquitectura limpia"'
         className="w-full rounded-lg border border-slate-700 bg-slate-950 p-2 text-slate-100"
       />
-      <button onClick={onSend} className="w-full rounded-lg bg-indigo-500 p-2 font-medium text-white hover:bg-indigo-400">Enviar</button>
+      <button aria-label="Enviar comando" onClick={onSend} className="w-full rounded-lg bg-indigo-500 p-2 font-medium text-white hover:bg-indigo-400">Enviar</button>
     </div>
   </section>
 )

@@ -1,4 +1,5 @@
 import type { Note } from '../domain/note'
+import type { CommandResult } from '../shared/types/app'
 
 const summarize = (text: string): string => {
   if (!text.trim()) return 'La nota está vacía, no hay nada que resumir.'
@@ -19,7 +20,7 @@ const tasksFromNote = (text: string): string[] => {
   return lines.slice(0, 5).map((line) => `- [ ] ${line.charAt(0).toUpperCase()}${line.slice(1)}`)
 }
 
-export const interpretCommand = (command: string, selectedNote: Note | null, notes: Note[]) => {
+export const interpretCommand = (command: string, selectedNote: Note | null, notes: Note[]): CommandResult => {
   const normalized = command.toLowerCase().trim()
 
   if (normalized.startsWith('crea una nota sobre')) {

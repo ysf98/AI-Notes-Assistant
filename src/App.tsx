@@ -5,21 +5,9 @@ import { NotesSidebar } from './components/NotesSidebar'
 import { interpretCommand } from './application/chatCommandInterpreter'
 import type { ChatMessage } from './domain/chat'
 import type { Note } from './domain/note'
+import type { NoteDraft } from './shared/types/app'
+import { createNoteFromDraft } from './shared/utils/noteFactory'
 import { loadNotes, saveNotes } from './infrastructure/persistence/localStorageNotesRepository'
-
-const createEmptyNote = (seed?: Partial<Note>): Note => {
-  const now = new Date().toISOString()
-  return {
-    id: crypto.randomUUID(),
-    title: '',
-    content: '',
-    category: 'General',
-    date: now.slice(0, 10),
-    createdAt: now,
-    updatedAt: now,
-    ...seed,
-  }
-}
 
 function App() {
   const [notes, setNotes] = useState<Note[]>(() => loadNotes())
@@ -46,8 +34,8 @@ function App() {
     setNotes((prev) => prev.map((n) => (n.id === note.id ? { ...note, updatedAt: new Date().toISOString() } : n)))
   }
 
-  const createNote = (seed?: Partial<Note>) => {
-    const note = createEmptyNote(seed)
+  const createNote = (seed?: Partial<NoteDraft>) => {
+    const note = createNoteFromDraft(seed)
     setNotes((prev) => [note, ...prev])
     setSelectedId(note.id)
   }
