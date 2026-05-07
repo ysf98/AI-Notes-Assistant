@@ -5,9 +5,10 @@ import { NotesSidebar } from './components/NotesSidebar'
 import { interpretCommand } from './application/chatCommandInterpreter'
 import type { ChatMessage } from './domain/chat'
 import type { Note } from './domain/note'
+import type { NoteDraft } from './shared/types/app'
 import { loadNotes, saveNotes } from './infrastructure/persistence/localStorageNotesRepository'
 
-const createEmptyNote = (seed?: Partial<Note>): Note => {
+const createEmptyNote = (seed?: Partial<NoteDraft>): Note => {
   const now = new Date().toISOString()
   return {
     id: crypto.randomUUID(),
@@ -46,7 +47,7 @@ function App() {
     setNotes((prev) => prev.map((n) => (n.id === note.id ? { ...note, updatedAt: new Date().toISOString() } : n)))
   }
 
-  const createNote = (seed?: Partial<Note>) => {
+  const createNote = (seed?: Partial<NoteDraft>) => {
     const note = createEmptyNote(seed)
     setNotes((prev) => [note, ...prev])
     setSelectedId(note.id)
