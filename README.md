@@ -34,6 +34,7 @@ npm run dev
 
 ## Tests y calidad
 ```bash
+npm run dev
 npm run test
 npm run lint
 ```
