@@ -44,8 +44,9 @@ const clampText = (value: string, maxChars: number): string => (value.length > m
 
 const getEnv = (key: string): string | undefined => {
   try {
-    if (typeof process === 'undefined' || !process?.env) return undefined
-    return process.env[key]
+    const env = (globalThis as { process?: { env?: Record<string, string | undefined> } }).process?.env
+    if (!env) return undefined
+    return env[key]
   } catch {
     return undefined
   }
