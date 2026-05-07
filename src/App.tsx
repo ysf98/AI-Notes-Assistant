@@ -2,12 +2,15 @@ import { useEffect, useMemo, useState } from 'react'
 import { ChatPanel } from './components/ChatPanel'
 import { NoteEditor } from './components/NoteEditor'
 import { NotesSidebar } from './components/NotesSidebar'
-import { interpretCommand } from './application/chatCommandInterpreter'
 import type { ChatMessage } from './domain/chat'
 import type { Note } from './domain/note'
 import type { NoteDraft } from './shared/types/app'
 import { createNoteFromDraft } from './shared/utils/noteFactory'
 import { loadNotes, saveNotes } from './infrastructure/persistence/localStorageNotesRepository'
+import { MockAiAssistantService } from './features/ai-assistant/mocks/MockAiAssistantService'
+import { RemoteAiAssistantService } from './features/ai-assistant/infrastructure/RemoteAiAssistantService'
+
+const aiService = import.meta.env.MODE === 'test' ? new MockAiAssistantService() : new RemoteAiAssistantService()
 
 function App() {
   const [notes, setNotes] = useState<Note[]>(() => loadNotes())
@@ -15,7 +18,7 @@ function App() {
   const [query, setQuery] = useState('')
   const [chatInput, setChatInput] = useState('')
   const [messages, setMessages] = useState<ChatMessage[]>([
-    { id: crypto.randomUUID(), role: 'assistant', content: 'Hola 👋 Puedes pedirme acciones sobre tus notas con comandos simulados.' },
+    { id: crypto.randomUUID(), role: 'assistant', content: 'Hola 👋 Puedes pedirme crear, resumir, convertir, titular o clasificar notas.' },
   ])
 
   useEffect(() => {
@@ -45,14 +48,30 @@ function App() {
     setSelectedId((prev) => (prev === id ? null : prev))
   }
 
-  const sendCommand = () => {
+  const sendCommand = async () => {
     if (!chatInput.trim()) return
     const userMessage: ChatMessage = { id: crypto.randomUUID(), role: 'user', content: chatInput }
-    const result = interpretCommand(chatInput, selectedNote, notes)
 
-    if (result.type === 'create') createNote(result.payload)
+    const aiResponse = await aiService.runInstruction(chatInput, {
+      selectedNoteTitle: selectedNote?.title,
+      selectedNoteContent: selectedNote?.content,
+      categories: ['General', 'Trabajo', 'Estudio', 'Ideas', 'Personal'],
+    })
 
-    const assistantMessage: ChatMessage = { id: crypto.randomUUID(), role: 'assistant', content: result.message }
+    let assistantText = 'Acción completada.'
+
+    if (aiResponse.action === 'create_note') {
+      createNote({ title: aiResponse.title, content: aiResponse.content, category: aiResponse.category })
+      assistantText = `He creado la nota "${aiResponse.title}".`
+    }
+
+    if (aiResponse.action === 'summarize_note') assistantText = `Resumen:\n${aiResponse.summary}`
+    if (aiResponse.action === 'convert_to_tasks') assistantText = `Tareas:\n${aiResponse.tasks.map((task) => `- [ ] ${task}`).join('\n')}`
+    if (aiResponse.action === 'suggest_title') assistantText = `Título sugerido: ${aiResponse.title}`
+    if (aiResponse.action === 'unknown') assistantText = aiResponse.message
+    if (aiResponse.action === 'classify_note') assistantText = `Categoría sugerida: ${aiResponse.category}`
+
+    const assistantMessage: ChatMessage = { id: crypto.randomUUID(), role: 'assistant', content: assistantText }
     setMessages((prev) => [...prev, userMessage, assistantMessage])
     setChatInput('')
   }
@@ -61,7 +80,7 @@ function App() {
     <main className="min-h-screen bg-slate-950 text-slate-100">
       <header className="border-b border-slate-800 p-4">
         <h1 className="text-2xl font-bold">AI Notes Assistant</h1>
-        <p className="text-sm text-slate-400">Gestión de notas + asistente IA simulado (sin backend).</p>
+        <p className="text-sm text-slate-400">Gestión de notas + asistente IA con respuestas estructuradas.</p>
       </header>
       <div className="flex flex-col lg:flex-row xl:grid xl:grid-cols-[20rem_1fr_24rem] min-h-[calc(100vh-82px)]">
         <NotesSidebar

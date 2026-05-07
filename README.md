@@ -1,118 +1,42 @@
 # AI Notes Assistant
 
-Aplicación de notas con interfaz moderna y asistente de comandos IA simulado. Pensada para portfolio técnico con estructura mantenible, tipado estricto y base lista para evolucionar a producto real.
+App de notas + chatbot IA con integración segura mediante endpoint backend (`/api/chat`).
 
-## ✨ Qué incluye
-
-- Gestión completa de notas: crear, editar, borrar y buscar.
-- Persistencia local con `localStorage`.
-- Comandos simulados en chat:
-  - `crea una nota sobre...`
-  - `resume esta nota`
-  - `convierte esta nota en tareas`
-  - `clasifica mis notas`
-- Datos mock iniciales para demo inmediata (sin backend).
-
-## 🧱 Arquitectura de carpetas
-
-```text
-src/
-├─ application/                 # Casos de uso y lógica de aplicación
-│  └─ chatCommandInterpreter.ts
-├─ components/                  # UI React (presentación)
-│  ├─ ChatPanel.tsx
-│  ├─ NoteEditor.tsx
-│  └─ NotesSidebar.tsx
-├─ domain/                      # Entidades y tipos de dominio
-│  ├─ chat.ts
-│  └─ note.ts
-├─ infrastructure/              # Implementaciones técnicas (persistencia)
-│  └─ persistence/
-│     └─ localStorageNotesRepository.ts
-├─ shared/
-│  ├─ mocks/                    # Datos mock iniciales
-│  │  └─ notes.ts
-│  └─ types/                    # Tipos TypeScript compartidos
-│     └─ app.ts
-├─ App.tsx
-└─ main.tsx
-
-docs/
-└─ screenshots/                 # Capturas para GitHub
+## Seguridad de API key (OpenAI)
+1. Crea un archivo `.env` local (no se sube a GitHub).
+2. Añade tu clave:
+```bash
+OPENAI_API_KEY=your_openai_api_key_here
 ```
+3. La key se lee **solo en backend/serverless** con `process.env.OPENAI_API_KEY`.
+4. Nunca uses `VITE_` para la API key.
 
-## 🧪 Tipado TypeScript añadido
+> `.env` está ignorado por git en `.gitignore`.
 
-Además de los tipos de dominio (`Note`, `ChatMessage`), se incorporan tipos compartidos para mejorar mantenibilidad:
+## Flujo de arquitectura
+- Frontend: `fetch('/api/chat')`.
+- Backend/serverless (`api/chat.ts`): valida `OPENAI_API_KEY`, llama a OpenAI y devuelve JSON estructurado.
+- Tests: IA mockeada, sin llamadas reales a OpenAI.
 
-- `NoteDraft`: shape mínimo para crear notas desde comandos.
-- `CommandResult`: unión discriminada para resultados del intérprete.
-- `CreateCommandResult` y `MessageCommandResult` para flujos explícitos y seguros.
+## Acciones JSON soportadas
+- `create_note`
+- `summarize_note`
+- `convert_to_tasks`
+- `suggest_title`
+- `classify_note`
+- `unknown`
 
-## 🚀 Instalación y ejecución
-
+## Ejecutar con npm
 ```bash
 npm install
 npm run dev
 ```
 
-### Scripts
-
-```bash
-npm run dev      # entorno local
-npm run build    # build de producción
-npm run preview  # previsualización del build
-```
-
-
-## ✅ Testing
-
-Este proyecto usa **Vitest + React Testing Library + user-event + jsdom**.
-
+## Tests y calidad
 ```bash
 npm run test
-npm run test:watch
-npm run test:coverage
+npm run lint
 ```
 
-Cobertura objetivo:
-
-- 80% funciones utilitarias
-- 70% componentes principales
-- 100% persistencia y parseo del chatbot
-
-## 📸 Screenshots
-
-Puedes añadir capturas en `docs/screenshots/` y enlazarlas aquí.
-
-Ejemplo:
-
-```md
-![Vista principal](docs/screenshots/dashboard-main.png)
-![Editor](docs/screenshots/note-editor.png)
-![Chat comandos](docs/screenshots/chat-commands.png)
-```
-
-> Se incluye `docs/screenshots/README.md` con una guía rápida de nombres recomendados.
-
-## 🗺️ Futuras mejoras (roadmap)
-
-1. **OpenAI API**
-   - Reemplazar comandos simulados por completions reales con prompt engineering.
-   - Soporte de acciones estructuradas (crear/resumir/convertir tareas) vía responses JSON.
-
-2. **Supabase**
-   - Persistencia cloud de notas.
-   - Sincronización multi-dispositivo en tiempo real.
-
-3. **Autenticación**
-   - Login con email/password y proveedores OAuth.
-   - Protección de rutas y datos por usuario.
-
-4. **Despliegue**
-   - Pipeline CI/CD.
-   - Deploy en Vercel/Netlify + variables de entorno seguras.
-
-## 📄 Licencia
-
-Uso educativo / portfolio.
+## Regla crítica
+La API key **nunca** debe subirse a GitHub ni incluirse en frontend.
