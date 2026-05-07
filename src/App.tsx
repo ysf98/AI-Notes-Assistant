@@ -52,28 +52,37 @@ function App() {
     if (!chatInput.trim()) return
     const userMessage: ChatMessage = { id: crypto.randomUUID(), role: 'user', content: chatInput }
 
-    const aiResponse = await aiService.runInstruction(chatInput, {
-      selectedNoteTitle: selectedNote?.title,
-      selectedNoteContent: selectedNote?.content,
-      categories: ['General', 'Trabajo', 'Estudio', 'Ideas', 'Personal'],
-    })
+    try {
+      const aiResponse = await aiService.runInstruction(chatInput, {
+        selectedNoteTitle: selectedNote?.title,
+        selectedNoteContent: selectedNote?.content,
+        categories: ['General', 'Trabajo', 'Estudio', 'Ideas', 'Personal'],
+      })
 
-    let assistantText = 'Acción completada.'
+      let assistantText = 'Acción completada.'
 
-    if (aiResponse.action === 'create_note') {
-      createNote({ title: aiResponse.title, content: aiResponse.content, category: aiResponse.category })
-      assistantText = `He creado la nota "${aiResponse.title}".`
+      if (aiResponse.action === 'create_note') {
+        createNote({ title: aiResponse.title, content: aiResponse.content, category: aiResponse.category })
+        assistantText = `He creado la nota "${aiResponse.title}".`
+      }
+
+      if (aiResponse.action === 'summarize_note') assistantText = `Resumen:\n${aiResponse.summary}`
+      if (aiResponse.action === 'convert_to_tasks') assistantText = `Tareas:\n${aiResponse.tasks.map((task) => `- [ ] ${task}`).join('\n')}`
+      if (aiResponse.action === 'suggest_title') assistantText = `Título sugerido: ${aiResponse.title}`
+      if (aiResponse.action === 'unknown') assistantText = aiResponse.message
+      if (aiResponse.action === 'classify_note') assistantText = `Categoría sugerida: ${aiResponse.category}`
+
+      const assistantMessage: ChatMessage = { id: crypto.randomUUID(), role: 'assistant', content: assistantText }
+      setMessages((prev) => [...prev, userMessage, assistantMessage])
+      setChatInput('')
+    } catch {
+      const assistantMessage: ChatMessage = {
+        id: crypto.randomUUID(),
+        role: 'assistant',
+        content: 'No he podido conectar con el asistente IA. Revisa que el servidor tenga configurada OPENAI_API_KEY y que /api/chat responda.',
+      }
+      setMessages((prev) => [...prev, userMessage, assistantMessage])
     }
-
-    if (aiResponse.action === 'summarize_note') assistantText = `Resumen:\n${aiResponse.summary}`
-    if (aiResponse.action === 'convert_to_tasks') assistantText = `Tareas:\n${aiResponse.tasks.map((task) => `- [ ] ${task}`).join('\n')}`
-    if (aiResponse.action === 'suggest_title') assistantText = `Título sugerido: ${aiResponse.title}`
-    if (aiResponse.action === 'unknown') assistantText = aiResponse.message
-    if (aiResponse.action === 'classify_note') assistantText = `Categoría sugerida: ${aiResponse.category}`
-
-    const assistantMessage: ChatMessage = { id: crypto.randomUUID(), role: 'assistant', content: assistantText }
-    setMessages((prev) => [...prev, userMessage, assistantMessage])
-    setChatInput('')
   }
 
   return (

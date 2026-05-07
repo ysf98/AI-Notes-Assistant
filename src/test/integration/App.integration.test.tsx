@@ -22,7 +22,7 @@ describe('App integration', () => {
     render(<App />)
     await user.type(screen.getByLabelText('Comando del asistente'), 'crea una nota sobre React')
     await user.click(screen.getByRole('button', { name: 'Enviar comando' }))
-    expect(screen.getByText(/Nota: React/i)).toBeInTheDocument()
+    expect(screen.getAllByText(/Nota: React/i).length).toBeGreaterThan(0)
   })
 
   it('eliminar nota funciona', async () => {

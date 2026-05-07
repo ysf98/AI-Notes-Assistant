@@ -11,6 +11,6 @@ describe('App AI integration', () => {
     await user.type(screen.getByLabelText('Comando del asistente'), 'Crea una nota sobre TypeScript')
     await user.click(screen.getByRole('button', { name: 'Enviar comando' }))
 
-    expect(screen.getByText(/Nota: TypeScript/i)).toBeInTheDocument()
+    expect(screen.getAllByText(/Nota: TypeScript/i).length).toBeGreaterThan(0)
   })
 })
