@@ -1,5 +1,7 @@
 import { parseAiAssistantResponse } from '../src/features/ai-assistant/application/aiResponseParser'
 
+export const config = { runtime: 'nodejs' }
+
 interface ChatRequestBody {
   message?: string
   note?: { title?: string; content?: string }
@@ -30,18 +32,24 @@ Use exactly one of these shapes:
 {"action":"unknown","message":"..."}
 `
 
-const DEFAULT_MODEL = process.env.OPENAI_MODEL ?? 'gpt-4o-mini'
+const DEFAULT_MODEL = 'gpt-4o-mini'
 const FALLBACK_MODEL = 'gpt-4.1-mini'
+
 const parsePositiveInt = (value: string | undefined, fallback: number): number => {
   const parsed = Number.parseInt(value ?? '', 10)
   return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback
 }
 
-const MAX_OUTPUT_TOKENS = parsePositiveInt(process.env.OPENAI_MAX_OUTPUT_TOKENS, 200)
-const MAX_MESSAGE_CHARS = parsePositiveInt(process.env.OPENAI_MAX_MESSAGE_CHARS, 800)
-const MAX_NOTE_CHARS = parsePositiveInt(process.env.OPENAI_MAX_NOTE_CHARS, 3000)
-
 const clampText = (value: string, maxChars: number): string => (value.length > maxChars ? value.slice(0, maxChars) : value)
+
+const getEnv = (key: string): string | undefined => {
+  try {
+    if (typeof process === 'undefined' || !process?.env) return undefined
+    return process.env[key]
+  } catch {
+    return undefined
+  }
+}
 
 const extractOutputText = (data: OpenAiResponsesSuccess): string | null => {
   if (typeof data.output_text === 'string' && data.output_text.trim()) return data.output_text
@@ -63,23 +71,28 @@ const shouldRetryWithFallback = (status: number, errorData: OpenAiErrorResponse)
 export default async function handler(req: { method?: string; body?: ChatRequestBody }, res: { status: (n: number) => { json: (v: unknown) => void } }) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' })
 
-  const apiKey = process.env.OPENAI_API_KEY
+  const model = getEnv('OPENAI_MODEL') ?? DEFAULT_MODEL
+  const maxOutputTokens = parsePositiveInt(getEnv('OPENAI_MAX_OUTPUT_TOKENS'), 200)
+  const maxMessageChars = parsePositiveInt(getEnv('OPENAI_MAX_MESSAGE_CHARS'), 800)
+  const maxNoteChars = parsePositiveInt(getEnv('OPENAI_MAX_NOTE_CHARS'), 3000)
+
+  const apiKey = getEnv('OPENAI_API_KEY')
   if (!apiKey) return res.status(500).json({ action: 'unknown', message: 'Server misconfigured' })
 
   const rawMessage = req.body?.message?.trim()
   if (!rawMessage) return res.status(400).json({ action: 'unknown', message: 'Invalid request' })
 
-  const message = clampText(rawMessage, MAX_MESSAGE_CHARS)
-  const noteContent = clampText((req.body?.note?.content ?? '').trim(), MAX_NOTE_CHARS)
+  const message = clampText(rawMessage, maxMessageChars)
+  const noteContent = clampText((req.body?.note?.content ?? '').trim(), maxNoteChars)
 
   try {
-    const callResponsesApi = async (model: string) =>
+    const callResponsesApi = async (modelName: string) =>
       fetch('https://api.openai.com/v1/responses', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },
         body: JSON.stringify({
-          model,
-          max_output_tokens: MAX_OUTPUT_TOKENS,
+          model: modelName,
+          max_output_tokens: maxOutputTokens,
           input: [
             { role: 'system', content: [{ type: 'input_text', text: systemPrompt }] },
             { role: 'user', content: [{ type: 'input_text', text: `Message: ${message}\nNote: ${noteContent}` }] },
@@ -87,11 +100,11 @@ export default async function handler(req: { method?: string; body?: ChatRequest
         }),
       })
 
-    let openAiResponse = await callResponsesApi(DEFAULT_MODEL)
+    let openAiResponse = await callResponsesApi(model)
 
     if (!openAiResponse.ok) {
       const errorData = (await openAiResponse.json().catch(() => ({}))) as OpenAiErrorResponse
-      if (DEFAULT_MODEL !== FALLBACK_MODEL && shouldRetryWithFallback(openAiResponse.status, errorData)) {
+      if (model !== FALLBACK_MODEL && shouldRetryWithFallback(openAiResponse.status, errorData)) {
         openAiResponse = await callResponsesApi(FALLBACK_MODEL)
       } else {
         return res.status(502).json({ action: 'unknown', message: 'AI service unavailable' })
