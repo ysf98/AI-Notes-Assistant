@@ -1,52 +1,43 @@
 # AI Notes Assistant
 
-Aplicación de notas con asistente IA estructurado (mock + integración real preparada) usando npm.
+App de notas + chatbot IA con integración segura mediante endpoint backend (`/api/chat`).
 
-## ✨ Qué incluye
-- Gestión completa de notas: crear, editar, borrar y buscar.
-- Persistencia local con `localStorage`.
-- Asistente IA por feature separada con contratos tipados (`AiAssistantService`).
-- Respuestas estructuradas para casos clave:
-  - crear nota
-  - resumir nota
-  - convertir en tareas
-  - proponer título
-  - clasificar nota
-- Implementación mock para tests y desarrollo local sin llamadas externas.
-- Adaptador remoto preparado para futura serverless function (`/api/ai/assistant`).
+## Seguridad de API key (OpenAI)
+1. Crea un archivo `.env` local (no se sube a GitHub).
+2. Añade tu clave:
+```bash
+OPENAI_API_KEY=your_openai_api_key_here
+```
+3. La key se lee **solo en backend/serverless** con `process.env.OPENAI_API_KEY`.
+4. Nunca uses `VITE_` para la API key.
 
-## 🔐 Seguridad
-- No exponer API keys en frontend.
-- Usar únicamente endpoint backend/serverless para llamadas reales a IA.
-- Configurar `VITE_AI_ASSISTANT_ENDPOINT` (ver `.env.example`) solo como URL, nunca como secreto.
+> `.env` está ignorado por git en `.gitignore`.
 
-## 🚀 Instalación y ejecución
+## Flujo de arquitectura
+- Frontend: `fetch('/api/chat')`.
+- Backend/serverless (`api/chat.ts`): valida `OPENAI_API_KEY`, llama a OpenAI y devuelve JSON estructurado.
+- Tests: IA mockeada, sin llamadas reales a OpenAI.
+
+## Acciones JSON soportadas
+- `create_note`
+- `summarize_note`
+- `convert_to_tasks`
+- `suggest_title`
+- `classify_note`
+- `unknown`
+
+## Ejecutar con npm
 ```bash
 npm install
 npm run dev
 ```
 
-## 📜 Scripts (npm)
+## Tests y calidad
 ```bash
 npm run dev
 npm run test
-npm run test:watch
-npm run test:coverage
 npm run lint
-npm run format
 ```
 
-## 🧪 Testing
-- Unit tests para parseo/validación de respuestas IA.
-- Integration test para crear nota desde chatbot.
-- Tests sin llamadas reales a APIs (siempre IA mockeada).
-
-## 🧱 Arquitectura (features + scope rule)
-```text
-src/features/ai-assistant/
-├─ domain/             # Contratos y tipos de IA
-├─ application/        # Parseo y validación de respuestas IA
-├─ infrastructure/     # Cliente remoto preparado para backend/serverless
-├─ mocks/              # Implementación mock para entorno local y tests
-└─ test/               # Tests unitarios de la feature
-```
+## Regla crítica
+La API key **nunca** debe subirse a GitHub ni incluirse en frontend.

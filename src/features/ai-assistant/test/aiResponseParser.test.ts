@@ -16,3 +16,9 @@ describe('parseAiAssistantResponse', () => {
     expect(() => parseAiAssistantResponse({ action: 'create_note', title: 'A' })).toThrowError()
   })
 })
+
+
+it('valida unknown', () => {
+  const result = parseAiAssistantResponse({ action: 'unknown', message: 'No entiendo' })
+  expect(result.action).toBe('unknown')
+})

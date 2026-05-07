@@ -8,8 +8,9 @@ import type { NoteDraft } from './shared/types/app'
 import { createNoteFromDraft } from './shared/utils/noteFactory'
 import { loadNotes, saveNotes } from './infrastructure/persistence/localStorageNotesRepository'
 import { MockAiAssistantService } from './features/ai-assistant/mocks/MockAiAssistantService'
+import { RemoteAiAssistantService } from './features/ai-assistant/infrastructure/RemoteAiAssistantService'
 
-const aiService = new MockAiAssistantService()
+const aiService = import.meta.env.MODE === 'test' ? new MockAiAssistantService() : new RemoteAiAssistantService()
 
 function App() {
   const [notes, setNotes] = useState<Note[]>(() => loadNotes())
@@ -66,7 +67,8 @@ function App() {
 
     if (aiResponse.action === 'summarize_note') assistantText = `Resumen:\n${aiResponse.summary}`
     if (aiResponse.action === 'convert_to_tasks') assistantText = `Tareas:\n${aiResponse.tasks.map((task) => `- [ ] ${task}`).join('\n')}`
-    if (aiResponse.action === 'propose_title') assistantText = `Título sugerido: ${aiResponse.title}`
+    if (aiResponse.action === 'suggest_title') assistantText = `Título sugerido: ${aiResponse.title}`
+    if (aiResponse.action === 'unknown') assistantText = aiResponse.message
     if (aiResponse.action === 'classify_note') assistantText = `Categoría sugerida: ${aiResponse.category}`
 
     const assistantMessage: ChatMessage = { id: crypto.randomUUID(), role: 'assistant', content: assistantText }
