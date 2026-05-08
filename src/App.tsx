@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Toaster, toast } from 'sonner'
 import { ChatPanel } from './components/ChatPanel'
 import { NoteEditor } from './components/NoteEditor'
@@ -29,6 +29,7 @@ function App() {
   const [notesError, setNotesError] = useState<string | null>(null)
   const [storageMode, setStorageMode] = useState<'supabase' | 'localStorage'>('localStorage')
   const [theme, setTheme] = useState<'light' | 'dark'>(() => (document.documentElement.classList.contains('dark') ? 'dark' : 'light'))
+  const hasHydratedTheme = useRef(false)
   const [showOnboarding, setShowOnboarding] = useState(() => localStorage.getItem(onboardingKey) !== 'true')
   const [mobilePanel, setMobilePanel] = useState<MobilePanel>('notes')
 
@@ -52,6 +53,10 @@ function App() {
 
   useEffect(() => {
     document.documentElement.classList.toggle('dark', theme === 'dark')
+    if (!hasHydratedTheme.current) {
+      hasHydratedTheme.current = true
+      return
+    }
     localStorage.setItem(themeKey, theme)
   }, [theme])
 

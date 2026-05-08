@@ -47,4 +47,5 @@ beforeEach(() => {
   vi.restoreAllMocks()
   window.localStorage.clear()
   window.localStorage.setItem('ai-notes-onboarding-seen', 'true')
+  document.documentElement.classList.remove('dark')
 })

@@ -43,6 +43,14 @@ describe('app ui behaviors', () => {
     const before = document.documentElement.classList.contains('dark')
     await user.click(button)
     expect(document.documentElement.classList.contains('dark')).toBe(!before)
+    expect(localStorage.getItem('ai-notes-theme')).toBe(!before ? 'dark' : 'light')
+  })
+
+  it('usa light por defecto si no hay tema guardado', async () => {
+    render(<App />)
+    await waitFor(() => expect(screen.queryByText('Cargando notas...')).not.toBeInTheDocument())
+    expect(document.documentElement.classList.contains('dark')).toBe(false)
+    expect(localStorage.getItem('ai-notes-theme')).toBeNull()
   })
 
   it('onboarding se muestra la primera vez', async () => {
