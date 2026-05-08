@@ -9,7 +9,7 @@ interface ChatPanelProps {
 }
 
 export const ChatPanel = ({ messages, value, isLoading, onChange, onSend }: ChatPanelProps) => (
-  <section className="w-full xl:w-96 border-l border-slate-200 dark:border-slate-800 bg-slate-100/70 dark:bg-slate-900/40 p-4 flex flex-col transition-all duration-300">
+  <section className="w-full xl:w-96 border-l border-slate-200 dark:border-slate-800 bg-slate-300 dark:bg-slate-950 p-4 flex flex-col transition-all duration-300">
     <h2 className="text-slate-900 dark:text-slate-100 font-semibold mb-3">Asistente IA</h2>
     <div className="flex-1 space-y-2 overflow-y-auto pr-1">
       {messages.length === 0 ? (
@@ -22,7 +22,7 @@ export const ChatPanel = ({ messages, value, isLoading, onChange, onSend }: Chat
         <div
           key={message.id}
           className={`rounded-lg p-3 text-sm transition-all duration-300 ${
-            message.role === 'user' ? 'bg-cyan-500/15 text-cyan-900 dark:text-cyan-100' : 'bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100'
+            message.role === 'user' ? 'bg-slate-200 text-slate-900 dark:bg-slate-800 dark:text-slate-100' : 'bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100'
           }`}
         >
           {message.content}
@@ -48,7 +48,7 @@ export const ChatPanel = ({ messages, value, isLoading, onChange, onSend }: Chat
         aria-label="Enviar comando"
         onClick={onSend}
         disabled={isLoading}
-        className="w-full rounded-lg bg-indigo-500 p-2 font-medium text-white hover:bg-indigo-400 disabled:opacity-60 transition-all duration-200"
+        className="w-full rounded-lg bg-slate-800 p-2 font-medium text-slate-100 hover:bg-slate-700 dark:bg-slate-200 dark:text-slate-900 dark:hover:bg-slate-300 disabled:opacity-60 transition-all duration-200"
       >
         {isLoading ? 'Generando...' : 'Enviar'}
       </button>

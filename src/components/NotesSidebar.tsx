@@ -24,11 +24,11 @@ const NotesSkeleton = () => (
 )
 
 export const NotesSidebar = ({ notes, selectedId, query, isLoading, onQueryChange, onSelect, onCreate, onDelete, onClearSearch }: NotesSidebarProps) => (
-  <aside className="w-full lg:w-80 border-r border-slate-200 dark:border-slate-800 p-4 space-y-4 bg-slate-100/70 dark:bg-slate-900/40 transition-colors duration-300">
+  <aside className="w-full lg:w-80 border-r border-slate-200 dark:border-slate-800 p-4 space-y-4 bg-slate-300 dark:bg-slate-950 transition-colors duration-300">
     <button
       aria-label="Nueva nota"
       onClick={onCreate}
-      className="w-full rounded-lg bg-cyan-500 px-4 py-2 font-medium text-slate-950 hover:bg-cyan-400 transition-all duration-200 active:scale-[0.99]"
+      className="w-full rounded-lg bg-slate-800 px-4 py-2 font-medium text-slate-100 hover:bg-slate-700 dark:bg-slate-200 dark:text-slate-900 dark:hover:bg-slate-300 transition-all duration-200 active:scale-[0.99]"
     >
       + Nueva nota
     </button>
@@ -50,7 +50,7 @@ export const NotesSidebar = ({ notes, selectedId, query, isLoading, onQueryChang
       {!isLoading && notes.length === 0 && query ? (
         <div className="card-ui p-4 text-sm text-slate-600 dark:text-slate-300">
           <p className="font-medium text-slate-900 dark:text-slate-100">No results found</p>
-          <button className="mt-2 text-cyan-600 dark:text-cyan-300 hover:underline" onClick={onClearSearch}>
+          <button className="mt-2 text-slate-700 dark:text-slate-300 hover:underline" onClick={onClearSearch}>
             Clear search
           </button>
         </div>
@@ -61,8 +61,8 @@ export const NotesSidebar = ({ notes, selectedId, query, isLoading, onQueryChang
             key={note.id}
             className={`rounded-lg p-3 border cursor-pointer transition-all duration-200 ${
               selectedId === note.id
-                ? 'border-cyan-500 bg-cyan-50 dark:border-cyan-400 dark:bg-slate-800'
-                : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 hover:border-cyan-400'
+                ? 'border-slate-400 bg-slate-200 dark:border-slate-500 dark:bg-slate-800'
+                : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 hover:border-slate-400'
             }`}
             onClick={() => onSelect(note.id)}
           >

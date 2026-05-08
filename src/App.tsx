@@ -60,6 +60,18 @@ function App() {
     localStorage.setItem(themeKey, theme)
   }, [theme])
 
+  useEffect(() => {
+    if (localStorage.getItem(themeKey)) return
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
+    const handleSystemThemeChange = (event: MediaQueryListEvent) => {
+      setTheme(event.matches ? 'dark' : 'light')
+    }
+    mediaQuery.addEventListener('change', handleSystemThemeChange)
+    return () => {
+      mediaQuery.removeEventListener('change', handleSystemThemeChange)
+    }
+  }, [])
+
   const filteredNotes = useMemo(() => {
     const q = query.toLowerCase().trim()
     if (!q) return notes
@@ -172,7 +184,7 @@ function App() {
   }
 
   return (
-    <main className="min-h-screen transition-colors duration-300">
+    <main className="min-h-screen bg-slate-300 dark:bg-slate-950 transition-colors duration-300">
       <Toaster richColors position="top-right" />
       {showOnboarding ? (
         <div className="fixed inset-0 z-50 bg-slate-950/40 backdrop-blur-sm grid place-items-center p-4">
@@ -183,19 +195,19 @@ function App() {
               <li>2. Ask AI to summarize, improve or organize it</li>
               <li>3. Save everything automatically with Supabase</li>
             </ol>
-            <button className="mt-4 rounded-lg bg-cyan-500 px-4 py-2 text-slate-950 font-medium hover:bg-cyan-400" onClick={closeOnboarding}>
+            <button className="mt-4 rounded-lg bg-slate-800 px-4 py-2 text-slate-100 font-medium hover:bg-slate-700 dark:bg-slate-200 dark:text-slate-900 dark:hover:bg-slate-300 transition-colors" onClick={closeOnboarding}>
               Start
             </button>
           </div>
         </div>
       ) : null}
-      <header className="border-b border-slate-200 dark:border-slate-800 p-4 bg-white/80 dark:bg-slate-950/80 backdrop-blur">
+      <header className="border-b border-slate-200 dark:border-slate-800 p-4 bg-slate-300 dark:bg-slate-950 transition-colors duration-300">
         <div className="flex items-center justify-between gap-3">
           <div>
             <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">AI Notes Assistant</h1>
             <p className="text-sm text-slate-500 dark:text-slate-400">Gestion de notas + asistente IA con respuestas estructuradas.</p>
             <p className="text-xs text-slate-500 mt-1">Persistencia activa: {storageMode === 'supabase' ? 'Supabase' : 'localStorage (fallback)'}</p>
-            {isLoadingNotes ? <p className="text-xs text-cyan-600 dark:text-cyan-300 mt-1">Cargando notas...</p> : null}
+            {isLoadingNotes ? <p className="text-xs text-slate-600 dark:text-slate-300 mt-1">Cargando notas...</p> : null}
             {notesError ? <p className="text-xs text-rose-500 mt-1">Error loading notes</p> : null}
           </div>
           <button
@@ -206,19 +218,19 @@ function App() {
             {theme === 'dark' ? 'Light mode' : 'Dark mode'}
           </button>
         </div>
-        <div className="mt-3 flex md:hidden rounded-lg border border-slate-300 dark:border-slate-700 p-1 gap-1 bg-white dark:bg-slate-900 w-full">
+        <div className="mt-3 flex md:hidden rounded-lg border border-slate-300 dark:border-slate-700 p-1 gap-1 bg-slate-50 dark:bg-slate-900 w-full">
           {(['notes', 'editor', 'chat'] as const).map((panel) => (
             <button
               key={panel}
               onClick={() => setMobilePanel(panel)}
-              className={`flex-1 rounded-md px-2 py-1 text-sm transition-colors ${mobilePanel === panel ? 'bg-cyan-500 text-slate-950 font-medium' : 'text-slate-600 dark:text-slate-300'}`}
+              className={`flex-1 rounded-md px-2 py-1 text-sm transition-colors ${mobilePanel === panel ? 'bg-slate-800 text-slate-100 dark:bg-slate-200 dark:text-slate-900 font-medium' : 'text-slate-600 dark:text-slate-300'}`}
             >
               {panel === 'notes' ? 'Notes' : panel === 'editor' ? 'Editor' : 'AI'}
             </button>
           ))}
         </div>
       </header>
-      <div className="md:flex md:flex-row xl:grid xl:grid-cols-[20rem_1fr_24rem] min-h-[calc(100vh-120px)]">
+      <div className="md:flex md:flex-row xl:grid xl:grid-cols-[20rem_1fr_24rem] min-h-[calc(100vh-120px)] bg-slate-300 dark:bg-slate-950 transition-colors duration-300">
         <div className={`${mobilePanel === 'notes' ? 'block' : 'hidden'} md:block`}>
           <NotesSidebar
             notes={filteredNotes}

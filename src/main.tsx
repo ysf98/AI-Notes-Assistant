@@ -5,7 +5,12 @@ import './styles/index.css'
 
 const themeKey = 'ai-notes-theme'
 const savedTheme = localStorage.getItem(themeKey)
-const initialTheme = savedTheme === 'dark' || savedTheme === 'light' ? savedTheme : 'light'
+const initialTheme =
+  savedTheme === 'dark' || savedTheme === 'light'
+    ? savedTheme
+    : window.matchMedia('(prefers-color-scheme: dark)').matches
+      ? 'dark'
+      : 'light'
 const isDark = initialTheme === 'dark'
 document.documentElement.classList.toggle('dark', isDark)
 

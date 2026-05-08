@@ -39,12 +39,30 @@ Object.defineProperty(globalThis, 'localStorage', {
   configurable: true,
 })
 
+const createMatchMediaMock = () =>
+  vi.fn().mockImplementation((query: string) => ({
+    matches: false,
+    media: query,
+    onchange: null,
+    addEventListener: vi.fn(),
+    removeEventListener: vi.fn(),
+    addListener: vi.fn(),
+    removeListener: vi.fn(),
+    dispatchEvent: vi.fn(),
+  }))
+
+Object.defineProperty(window, 'matchMedia', {
+  writable: true,
+  value: createMatchMediaMock(),
+})
+
 afterEach(() => {
   cleanup()
 })
 
 beforeEach(() => {
   vi.restoreAllMocks()
+  window.matchMedia = createMatchMediaMock()
   window.localStorage.clear()
   window.localStorage.setItem('ai-notes-onboarding-seen', 'true')
   document.documentElement.classList.remove('dark')
