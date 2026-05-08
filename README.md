@@ -1,159 +1,151 @@
 # AI Notes Assistant
 
-Aplicación de **notas personales + asistente IA** con enfoque privacy-first: la UI vive en React y las llamadas a OpenAI pasan por un endpoint backend (`/api/chat`) para no exponer la API key en el navegador.
+Aplicacion de notas con asistente IA. Permite crear, editar, buscar y organizar notas, y usar un chatbot para automatizar acciones sobre ellas.
 
-## 1) ¿Para qué sirve?
+## 1) Para que sirve
 
-AI Notes Assistant te permite:
-
-- Crear, editar y organizar notas.
-- Buscar notas rápidamente por texto.
-- Usar un chatbot para automatizar tareas sobre notas:
+- Gestion personal de notas.
+- Productividad con ayuda de IA:
   - crear nota,
   - resumir nota,
-  - convertir nota en tareas,
-  - sugerir título,
-  - clasificar categoría,
+  - convertir en tareas,
+  - sugerir titulo,
+  - clasificar categoria,
   - editar nota seleccionada.
 
-## 2) Demo
+## 2) Capturas
 
-- Demo local: `http://localhost:5173` (con `npm run dev`).
-- Demo online: depende de tu despliegue en Vercel.
-
-## 3) Capturas de la app
-
-### Vista general
-
-![Vista general de AI Notes Assistant](docs/images/app-overview.png)
-
-### Flujo de creación de nota con el asistente
-
-![Creación de nota con chatbot](docs/images/app-chat-create-note.png)
-
-### Ejemplo de nota generada por IA
-
+![Vista general](docs/images/app-overview.png)
+![Creacion con chatbot](docs/images/app-chat-create-note.png)
 ![Ejemplo de nota generada](docs/images/app-chat-example-note.png)
 
-## 4) Features principales
+## 3) Stack
 
-- Editor de notas con título, contenido, categoría y fecha.
-- Sidebar con listado, búsqueda y creación/eliminación de notas.
-- Persistencia local en `localStorage`.
-- Asistente IA con respuestas JSON tipadas y validadas.
-- Endpoint backend seguro para OpenAI (`api/chat.ts`).
-- Límites de consumo configurables por entorno:
-  - tokens de salida,
-  - tamaño máximo del mensaje,
-  - tamaño máximo del contenido de nota.
-- Suite de tests unitarios e integración.
+- React 18 + TypeScript + Vite
+- TailwindCSS
+- OpenAI Responses API via `api/chat.ts`
+- Supabase (tabla `notes`) para persistencia remota
+- Fallback a `localStorage` si Supabase no esta configurado
+- Vitest + Testing Library
 
-## 5) Stack técnico
+## 4) Arquitectura
 
-- **Frontend:** React 18 + TypeScript + Vite + TailwindCSS
-- **Backend API (serverless):** `api/chat.ts` (Vercel-compatible)
-- **Testing:** Vitest + Testing Library + JSDOM
-- **Persistencia local:** `localStorage`
-- **IA:** OpenAI Responses API
+Estructura principal:
 
-## 6) Arquitectura (visión rápida)
+- `src/domain/*`: entidades y tipos de dominio
+- `src/application/*`: logica de aplicacion
+- `src/infrastructure/supabase/*`: cliente Supabase
+- `src/infrastructure/persistence/*`: repositorios y fallback local
+- `src/features/ai-assistant/*`: contratos, parser y servicios de IA
+- `src/components/*`: UI
+- `api/chat.ts`: endpoint backend para OpenAI
 
-Estructura por capas siguiendo principios de Clean Architecture:
+Regla clave: la UI no habla directo con Supabase, usa repositorios de infraestructura.
 
-- `src/domain/*`: entidades y tipos de dominio (`note`, `chat`).
-- `src/application/*`: lógica de casos de uso local.
-- `src/infrastructure/*`: persistencia y adaptadores técnicos.
-- `src/features/ai-assistant/*`: dominio, parser y servicios IA.
-- `src/components/*`: UI.
-- `api/chat.ts`: endpoint backend para OpenAI.
+## 5) Flujo de notas
 
-Flujo IA:
+1. Al iniciar, se cargan notas desde Supabase.
+2. Si Supabase no esta configurado, carga desde localStorage.
+3. Crear/editar/eliminar notas usa el repositorio de notas.
+4. Si el chatbot crea una nota, se persiste por el mismo repositorio.
 
-1. Frontend envía instrucción a `/api/chat`.
-2. Backend valida input + límites.
-3. Backend llama a OpenAI con la API key del servidor.
-4. Backend normaliza/valida JSON de respuesta.
-5. Frontend aplica acción recibida en la UI.
+## 6) Instalacion
 
-## 7) Instalación y arranque
+Requisitos:
 
-### Requisitos
+- Node.js 20+
+- npm
 
-- Node.js 20+ (recomendado LTS actual).
-- npm.
-
-### Pasos
+Comandos:
 
 ```bash
 npm ci
 cp .env.example .env
+npm run dev
 ```
 
-Configura tu `.env`:
+## 7) Variables de entorno
+
+Frontend (publicas, permitidas):
 
 ```bash
-OPENAI_API_KEY=tu_api_key
+VITE_SUPABASE_URL=your_supabase_project_url
+VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+```
+
+Backend IA:
+
+```bash
+OPENAI_API_KEY=your_openai_api_key_here
 OPENAI_MODEL=gpt-4o-mini
 OPENAI_MAX_OUTPUT_TOKENS=200
 OPENAI_MAX_MESSAGE_CHARS=800
 OPENAI_MAX_NOTE_CHARS=3000
 ```
 
-Arranque en desarrollo:
+Importante:
+
+- No usar `service_role` key en frontend.
+- No exponer claves sensibles en el cliente.
+
+## 8) Supabase: tabla notes
+
+SQL incluido en:
+
+- `supabase/schema.sql`
+- `supabase/seed.sql`
+
+Estructura:
+
+- `notes`
+  - `id uuid primary key default gen_random_uuid()`
+  - `title text not null`
+  - `content text not null`
+  - `category text`
+  - `created_at timestamptz default now()`
+  - `updated_at timestamptz default now()`
+
+Pasos:
+
+1. Crea tu proyecto Supabase.
+2. Abre SQL Editor.
+3. Ejecuta el archivo `supabase/schema.sql`.
+4. Copia URL y anon key al `.env`.
+5. Opcional: ejecuta `supabase/seed.sql` para cargar notas de ejemplo.
+
+## 9) Scripts
 
 ```bash
 npm run dev
-```
-
-## 8) Scripts disponibles
-
-```bash
-npm run dev        # servidor local
-npm run build      # build producción
-npm run preview    # preview local de build
-npm run test       # tests (run)
-npm run test:watch # tests en watch
+npm run build
+npm run preview
+npm run test
+npm run test:watch
 npm run test:coverage
-npm run lint       # en este repo equivale a build
+npm run lint
 ```
 
-## 9) Variables de entorno
+## 10) Despliegue
 
-- `OPENAI_API_KEY` (obligatoria): clave de OpenAI en backend.
-- `OPENAI_MODEL` (opcional): modelo IA. Default: `gpt-4o-mini`.
-- `OPENAI_MAX_OUTPUT_TOKENS` (opcional): límite de salida. Default: `200`.
-- `OPENAI_MAX_MESSAGE_CHARS` (opcional): máximo chars instrucción usuario. Default: `800`.
-- `OPENAI_MAX_NOTE_CHARS` (opcional): máximo chars contenido de nota enviado al modelo. Default: `3000`.
+En Vercel:
 
-## 10) Seguridad
-
-- No uses `VITE_` para la API key.
-- `.env` está ignorado en `.gitignore`.
-- La key solo se usa en backend (`api/chat.ts`).
-- Cualquier usuario de una app pública puede consumir tu cuota de OpenAI: añade auth/rate-limit antes de abrirla al público.
-
-## 11) Despliegue en Vercel
-
-1. Importa el repositorio en Vercel.
-2. Configura variables de entorno del proyecto (Production y Preview).
+1. Importa el repo.
+2. Configura variables de entorno (Preview y Production).
 3. Deploy.
 4. Verifica `POST /api/chat`.
 
-Si ves latencia en la primera llamada del chatbot, puede ser un **cold start** del runtime serverless.
+## 11) Troubleshooting
 
-## 12) Troubleshooting
+- `Server misconfigured`: falta `OPENAI_API_KEY` en el deploy.
+- `AI service unavailable (502)`: fallo aguas arriba del proveedor IA.
+- Si no hay Supabase configurado, la app entra automaticamente en fallback localStorage.
+- Primera llamada al chatbot puede tardar por cold start serverless.
 
-- `Server misconfigured`: falta `OPENAI_API_KEY` en entorno del deploy.
-- `AI service unavailable (502)`: fallo aguas arriba de OpenAI o modelo no disponible.
-- `FUNCTION_INVOCATION_FAILED`: revisar logs de Vercel y runtime/env del endpoint.
-- El chatbot tarda al inicio: posible cold start.
+## 12) Calidad y tests
 
-## 13) Estado de calidad
+La suite cubre:
 
-- Tests unitarios e integración activos en `src/test`.
-- Validación de respuestas IA con parser tipado.
-- Build de producción con TypeScript.
-
----
-
-Si vas a contribuir, revisa también `AGENTS.md` para reglas de arquitectura, testing y definición de done.
+- carga de notas,
+- crear/actualizar/eliminar nota,
+- fallback a localStorage cuando Supabase no esta configurado,
+- creacion de nota desde chatbot persistida en repositorio.

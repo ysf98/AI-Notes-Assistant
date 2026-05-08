@@ -28,7 +28,8 @@ describe('App integration', () => {
   it('eliminar nota funciona', async () => {
     const user = userEvent.setup()
     render(<App />)
-    const btn = screen.getAllByRole('button', { name: 'Borrar' })[0]
+    const buttons = await screen.findAllByRole('button', { name: 'Borrar' })
+    const btn = buttons[0]
     await user.click(btn)
     expect(screen.queryByText("Plan semanal del proyecto")).not.toBeInTheDocument()
   })
