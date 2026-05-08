@@ -151,3 +151,19 @@ La suite cubre:
 - crear/actualizar/eliminar nota,
 - fallback a localStorage cuando Supabase no esta configurado,
 - creacion de nota desde chatbot persistida en repositorio.
+
+## 13) UI/UX improvements
+
+- Dark mode y light mode con toggle persistido en localStorage.
+- Skeleton loaders para carga de notas y respuesta del chatbot.
+- Toast notifications con `sonner` para acciones clave.
+- Empty states para notas, busqueda y chatbot sin conversacion.
+- Onboarding inicial de 3 pasos para nuevos usuarios.
+- Responsive polish con navegacion mobile entre Notes, Editor y AI.
+
+Sugerencia de capturas para el README:
+
+1. Vista general desktop.
+2. Flujo de creacion con IA.
+3. Estado vacio + onboarding.
+4. Vista mobile con tabs Notes/Editor/AI.

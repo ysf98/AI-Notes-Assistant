@@ -4,15 +4,32 @@ interface NotesSidebarProps {
   notes: Note[]
   selectedId: string | null
   query: string
+  isLoading: boolean
   onQueryChange: (value: string) => void
   onSelect: (id: string) => void
   onCreate: () => void
   onDelete: (id: string) => void
+  onClearSearch: () => void
 }
 
-export const NotesSidebar = ({ notes, selectedId, query, onQueryChange, onSelect, onCreate, onDelete }: NotesSidebarProps) => (
-  <aside className="w-full lg:w-80 bg-slate-900 border-r border-slate-800 p-4 space-y-4">
-    <button aria-label="Nueva nota" onClick={onCreate} className="w-full rounded-lg bg-cyan-500 px-4 py-2 font-medium text-slate-950 hover:bg-cyan-400">
+const NotesSkeleton = () => (
+  <div className="space-y-2 animate-pulse">
+    {Array.from({ length: 4 }).map((_, index) => (
+      <div key={index} className="rounded-lg border border-slate-200 dark:border-slate-800 p-3">
+        <div className="h-4 w-3/4 bg-slate-200 dark:bg-slate-700 rounded" />
+        <div className="h-3 w-1/2 bg-slate-200 dark:bg-slate-700 rounded mt-2" />
+      </div>
+    ))}
+  </div>
+)
+
+export const NotesSidebar = ({ notes, selectedId, query, isLoading, onQueryChange, onSelect, onCreate, onDelete, onClearSearch }: NotesSidebarProps) => (
+  <aside className="w-full lg:w-80 border-r border-slate-200 dark:border-slate-800 p-4 space-y-4 bg-slate-100/70 dark:bg-slate-900/40 transition-colors duration-300">
+    <button
+      aria-label="Nueva nota"
+      onClick={onCreate}
+      className="w-full rounded-lg bg-cyan-500 px-4 py-2 font-medium text-slate-950 hover:bg-cyan-400 transition-all duration-200 active:scale-[0.99]"
+    >
       + Nueva nota
     </button>
     <input
@@ -20,30 +37,53 @@ export const NotesSidebar = ({ notes, selectedId, query, onQueryChange, onSelect
       value={query}
       onChange={(e) => onQueryChange(e.target.value)}
       placeholder="Buscar notas..."
-      className="w-full rounded-lg border border-slate-700 bg-slate-800 p-2 text-sm text-slate-100"
+      className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 p-2 text-sm text-slate-900 dark:text-slate-100"
     />
     <div className="space-y-2 max-h-[70vh] overflow-y-auto pr-1">
-      {notes.map((note) => (
-        <article
-          key={note.id}
-          className={`rounded-lg p-3 border cursor-pointer ${selectedId === note.id ? 'border-cyan-400 bg-slate-800' : 'border-slate-700 bg-slate-900/50'}`}
-          onClick={() => onSelect(note.id)}
-        >
-          <div className="flex items-start justify-between gap-2">
-            <h3 className="font-semibold text-slate-100 truncate">{note.title || 'Sin título'}</h3>
-            <button
-              onClick={(e) => {
-                e.stopPropagation()
-                onDelete(note.id)
-              }}
-              className="text-xs text-rose-300 hover:text-rose-200"
-            >
-              Borrar
-            </button>
-          </div>
-          <p className="text-xs text-slate-400 mt-1">{note.category} • {note.date || 'Sin fecha'}</p>
-        </article>
-      ))}
+      {isLoading ? <NotesSkeleton /> : null}
+      {!isLoading && notes.length === 0 && !query ? (
+        <div className="card-ui p-4 text-sm text-slate-600 dark:text-slate-300">
+          <p className="font-medium text-slate-900 dark:text-slate-100">No notes yet</p>
+          <p className="mt-1">Create your first note</p>
+        </div>
+      ) : null}
+      {!isLoading && notes.length === 0 && query ? (
+        <div className="card-ui p-4 text-sm text-slate-600 dark:text-slate-300">
+          <p className="font-medium text-slate-900 dark:text-slate-100">No results found</p>
+          <button className="mt-2 text-cyan-600 dark:text-cyan-300 hover:underline" onClick={onClearSearch}>
+            Clear search
+          </button>
+        </div>
+      ) : null}
+      {!isLoading &&
+        notes.map((note) => (
+          <article
+            key={note.id}
+            className={`rounded-lg p-3 border cursor-pointer transition-all duration-200 ${
+              selectedId === note.id
+                ? 'border-cyan-500 bg-cyan-50 dark:border-cyan-400 dark:bg-slate-800'
+                : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 hover:border-cyan-400'
+            }`}
+            onClick={() => onSelect(note.id)}
+          >
+            <div className="flex items-start justify-between gap-2">
+              <h3 className="font-semibold text-slate-900 dark:text-slate-100 truncate">{note.title || 'Sin titulo'}</h3>
+              <button
+                aria-label={`Borrar ${note.title || note.id}`}
+                onClick={(e) => {
+                  e.stopPropagation()
+                  onDelete(note.id)
+                }}
+                className="text-xs text-rose-500 hover:text-rose-400"
+              >
+                Borrar
+              </button>
+            </div>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+              {note.category} • {note.date || 'Sin fecha'}
+            </p>
+          </article>
+        ))}
     </div>
   </aside>
 )

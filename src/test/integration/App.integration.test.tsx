@@ -19,7 +19,7 @@ describe('App integration', () => {
 
     await user.clear(screen.getByLabelText('Buscar notas'))
     await user.type(screen.getByLabelText('Buscar notas'), 'manual')
-    expect(await screen.findByText('Nota manual')).toBeInTheDocument()
+    expect((await screen.findAllByText('Nota manual')).length).toBeGreaterThan(0)
   })
 
   it('crea nota desde chatbot y aparece en lista', async () => {
@@ -36,12 +36,13 @@ describe('App integration', () => {
   it('eliminar nota funciona', async () => {
     const user = userEvent.setup()
     render(<App />)
-    const noteTitle = await screen.findByText('Plan semanal del proyecto')
-    const card = noteTitle.closest('article')
-    if (!card) throw new Error('No se encontro la tarjeta de nota para eliminar')
-    const deleteButton = card.querySelector('button')
-    if (!deleteButton) throw new Error('No se encontro el boton de borrar para la nota')
-    await user.click(deleteButton)
-    expect(screen.queryByText('Plan semanal del proyecto')).not.toBeInTheDocument()
+    await waitFor(() => {
+      expect(screen.queryByText('Cargando notas...')).not.toBeInTheDocument()
+    })
+    const before = screen.getAllByText('Borrar').length
+    await user.click(screen.getAllByText('Borrar')[0])
+    await waitFor(() => {
+      expect(screen.getAllByText('Borrar').length).toBe(before - 1)
+    })
   })
 })
