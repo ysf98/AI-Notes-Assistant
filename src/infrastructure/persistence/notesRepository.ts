@@ -64,7 +64,7 @@ export const createNotesRepository = (deps?: Partial<NotesRepositoryDeps>): Note
       .select('id,title,content,category,created_at,updated_at')
       .order('updated_at', { ascending: false })
 
-    if (error) throw new Error('No se han podido cargar las notas desde Supabase.')
+    if (error) return { notes: loadLocal(), mode: 'localStorage' }
 
     const notes = (data as NoteRow[]).map(toDomain)
     saveLocal(notes)
@@ -79,10 +79,18 @@ export const createNotesRepository = (deps?: Partial<NotesRepositoryDeps>): Note
     }
 
     const client = getClient()
-    if (!client) throw new Error('Supabase no disponible.')
+    if (!client) {
+      const notes = [note, ...loadLocal()]
+      saveLocal(notes)
+      return { mode: 'localStorage' }
+    }
 
     const { error } = await client.from('notes').insert(toRow(note))
-    if (error) throw new Error('No se ha podido crear la nota en Supabase.')
+    if (error) {
+      const notes = [note, ...loadLocal()]
+      saveLocal(notes)
+      return { mode: 'localStorage' }
+    }
 
     return { mode: 'supabase' }
   }
@@ -95,10 +103,18 @@ export const createNotesRepository = (deps?: Partial<NotesRepositoryDeps>): Note
     }
 
     const client = getClient()
-    if (!client) throw new Error('Supabase no disponible.')
+    if (!client) {
+      const notes = loadLocal().map((current) => (current.id === note.id ? note : current))
+      saveLocal(notes)
+      return { mode: 'localStorage' }
+    }
 
     const { error } = await client.from('notes').update(toRow(note)).eq('id', note.id)
-    if (error) throw new Error('No se ha podido actualizar la nota en Supabase.')
+    if (error) {
+      const notes = loadLocal().map((current) => (current.id === note.id ? note : current))
+      saveLocal(notes)
+      return { mode: 'localStorage' }
+    }
 
     return { mode: 'supabase' }
   }
@@ -111,10 +127,18 @@ export const createNotesRepository = (deps?: Partial<NotesRepositoryDeps>): Note
     }
 
     const client = getClient()
-    if (!client) throw new Error('Supabase no disponible.')
+    if (!client) {
+      const notes = loadLocal().filter((current) => current.id !== id)
+      saveLocal(notes)
+      return { mode: 'localStorage' }
+    }
 
     const { error } = await client.from('notes').delete().eq('id', id)
-    if (error) throw new Error('No se ha podido eliminar la nota en Supabase.')
+    if (error) {
+      const notes = loadLocal().filter((current) => current.id !== id)
+      saveLocal(notes)
+      return { mode: 'localStorage' }
+    }
 
     return { mode: 'supabase' }
   }

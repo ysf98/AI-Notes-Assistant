@@ -113,6 +113,8 @@ Pasos:
 4. Copia URL y anon key al `.env`.
 5. Opcional: ejecuta `supabase/seed.sql` para cargar notas de ejemplo.
 
+Nota: el `schema.sql` ya incluye policies RLS para el rol `anon` (sin autenticacion), necesarias para esta fase del proyecto.
+
 ## 9) Scripts
 
 ```bash
