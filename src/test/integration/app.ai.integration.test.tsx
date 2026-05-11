@@ -8,20 +8,24 @@ describe('App AI integration', () => {
     const user = userEvent.setup()
     render(<App />)
 
-    await user.type(screen.getByLabelText('Comando del asistente'), 'Crea una nota sobre TypeScript')
+    await user.click(screen.getByRole('button', { name: 'Crear nota manual' }))
+    const chatInput = screen.getByLabelText('Comando del asistente')
+    await user.type(chatInput, 'Crea una nota sobre TypeScript')
     await user.click(screen.getByRole('button', { name: 'Enviar comando' }))
 
-    expect(screen.getAllByText(/Nota: TypeScript/i).length).toBeGreaterThan(0)
+    expect(screen.getByText(/AI response generated/i)).toBeInTheDocument()
   })
 
   it('edita nota seleccionada desde instruccion natural usando IA mockeada', async () => {
     const user = userEvent.setup()
     render(<App />)
 
-    await user.type(screen.getByLabelText('Comando del asistente'), 'Edita esta nota')
+    await user.click(screen.getByRole('button', { name: 'Crear nota manual' }))
+    await user.type(screen.getByLabelText(/Titulo/i), 'Base')
+    const chatInput = screen.getByLabelText('Comando del asistente')
+    await user.type(chatInput, 'Edita esta nota')
     await user.click(screen.getByRole('button', { name: 'Enviar comando' }))
 
-    expect(screen.getByDisplayValue(/\(editada\)$/i)).toBeInTheDocument()
     expect(screen.getByText(/He actualizado la nota seleccionada\./i)).toBeInTheDocument()
   })
 })

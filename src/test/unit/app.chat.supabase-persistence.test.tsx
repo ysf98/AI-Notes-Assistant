@@ -22,7 +22,10 @@ describe('chatbot persistence on repository', () => {
     const user = userEvent.setup()
     render(<App />)
 
-    await user.type(screen.getByLabelText('Comando del asistente'), 'Crea una nota sobre Supabase')
+    await user.click(screen.getByRole('button', { name: 'Crear con asistente IA' }))
+    const chatInput = screen.getByLabelText('Comando del asistente')
+    await user.clear(chatInput)
+    await user.type(chatInput, 'Crea una nota sobre Supabase')
     await user.click(screen.getByRole('button', { name: 'Enviar comando' }))
 
     await waitFor(() => {

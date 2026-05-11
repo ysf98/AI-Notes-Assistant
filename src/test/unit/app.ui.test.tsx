@@ -68,8 +68,8 @@ describe('app ui behaviors', () => {
   it('empty states de notas y chat', async () => {
     render(<App />)
     await waitFor(() => expect(screen.queryByText('Cargando notas...')).not.toBeInTheDocument())
-    expect(screen.getByText('No notes yet')).toBeInTheDocument()
-    expect(screen.getByText('No conversation yet')).toBeInTheDocument()
+    expect(screen.getByText('No hay una nota abierta')).toBeInTheDocument()
+    expect(screen.queryByText('Todavía no hay conversación')).not.toBeInTheDocument()
   })
 
   it('toast al crear y eliminar nota', async () => {

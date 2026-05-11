@@ -9,7 +9,10 @@ describe('chatbot mocked', () => {
     const user = userEvent.setup()
     render(<App />)
 
-    await user.type(screen.getByLabelText('Comando del asistente'), 'resume esta nota')
+    await user.click(screen.getByRole('button', { name: 'Crear nota manual' }))
+    await user.type(screen.getByLabelText('Contenido'), 'Texto de prueba para resumir.')
+    const chatInput = screen.getByLabelText('Comando del asistente')
+    await user.type(chatInput, 'resume la nota actual')
     await user.click(screen.getByRole('button', { name: 'Enviar comando' }))
 
     expect(screen.getByText(/Resumen:/)).toBeInTheDocument()

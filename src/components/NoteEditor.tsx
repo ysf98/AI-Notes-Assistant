@@ -3,9 +3,12 @@ import { categories, type Note } from '../domain/note'
 interface NoteEditorProps {
   note: Note | null
   onChange: (next: Note) => void
+  onSave: () => void
+  onBack: () => void
+  hasUnsavedChanges: boolean
 }
 
-export const NoteEditor = ({ note, onChange }: NoteEditorProps) => {
+export const NoteEditor = ({ note, onChange, onSave, onBack, hasUnsavedChanges }: NoteEditorProps) => {
   if (!note) {
     return (
       <section className="flex-1 grid place-items-center p-6">
@@ -19,6 +22,23 @@ export const NoteEditor = ({ note, onChange }: NoteEditorProps) => {
 
   return (
     <section className="flex-1 p-4 sm:p-6 space-y-4 transition-all duration-300">
+      <div className="flex items-center justify-between gap-3">
+        <button
+          type="button"
+          onClick={onBack}
+          className="rounded-lg border border-slate-300 dark:border-slate-700 px-3 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+        >
+          Atras
+        </button>
+        <button
+          type="button"
+          onClick={onSave}
+          disabled={!hasUnsavedChanges}
+          className="rounded-lg bg-slate-800 px-4 py-2 text-sm font-medium text-slate-100 hover:bg-slate-700 dark:bg-slate-200 dark:text-slate-900 dark:hover:bg-slate-300 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+        >
+          Guardar
+        </button>
+      </div>
       <label className="sr-only" htmlFor="note-title">
         Titulo
       </label>
