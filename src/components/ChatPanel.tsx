@@ -46,7 +46,7 @@ export const ChatPanel = ({ messages, value, isLoading, onChange, onSend }: Chat
         value={value}
         onChange={(e) => onChange(e.target.value)}
         rows={3}
-        placeholder='Ej: "resume esta nota"'
+        placeholder=""
         className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 p-2 text-slate-900 dark:text-slate-100"
       />
       <button

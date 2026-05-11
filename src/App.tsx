@@ -216,7 +216,7 @@ function App() {
 
   const startAiNoteFlow = () => {
     const note = createNote()
-    setChatInputsByNote((prev) => ({ ...prev, [note.id]: prev[note.id]?.trim() ? prev[note.id] : 'Resume y mejora esta nota: ' }))
+    setChatInputsByNote((prev) => ({ ...prev, [note.id]: prev[note.id] ?? '' }))
   }
 
   const hasUnsavedChanges = selectedNote ? savedSnapshots[selectedNote.id] !== serializeNote(selectedNote) : false
@@ -257,21 +257,19 @@ function App() {
           </button>
         </div>
         <div className="mt-3 md:hidden">
-          <label htmlFor="mobile-view" className="sr-only">
-            Vista en movil
-          </label>
-          <select
-            id="mobile-view"
-            value={mobilePanel}
-            onChange={(e) => setMobilePanel(e.target.value as MobilePanel)}
-            className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 px-3 py-2 text-sm text-slate-700 dark:text-slate-200"
+          <button
+            onClick={startAiNoteFlow}
+            className="w-full rounded-lg bg-slate-800 px-4 py-2 text-sm font-medium text-slate-100 hover:bg-slate-700 dark:bg-slate-200 dark:text-slate-900 dark:hover:bg-slate-300 transition-colors"
           >
-            {hasNotes ? <option value="notes">Notes</option> : null}
-            <option value="editor">Editor</option>
-          </select>
+            Crear nota
+          </button>
         </div>
       </header>
-      <div className="min-h-[calc(100vh-120px)] bg-slate-300 dark:bg-slate-950 transition-colors duration-300 md:flex md:flex-row xl:grid xl:grid-cols-[20rem_1fr]">
+      <div
+        className={`min-h-[calc(100vh-120px)] bg-slate-300 dark:bg-slate-950 transition-colors duration-300 md:flex md:flex-row ${
+          hasNotes ? 'xl:grid xl:grid-cols-[20rem_minmax(0,1100px)] xl:justify-center' : 'xl:flex xl:justify-center'
+        }`}
+      >
         {hasNotes ? (
           <div className={`${mobilePanel === 'notes' ? 'block' : 'hidden'} md:block`}>
             <NotesSidebar
@@ -340,16 +338,10 @@ function App() {
                     <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">Elige tu flujo de trabajo y empieza en segundos.</p>
                     <div className="mt-4 space-y-3">
                       <button
-                        onClick={() => createNote()}
+                        onClick={startAiNoteFlow}
                         className="w-full rounded-lg bg-slate-800 px-4 py-3 text-sm font-medium text-slate-100 hover:bg-slate-700 dark:bg-slate-200 dark:text-slate-900 dark:hover:bg-slate-300 transition-colors"
                       >
-                        Crear nota manual
-                      </button>
-                      <button
-                        onClick={startAiNoteFlow}
-                        className="w-full rounded-lg border border-slate-300 dark:border-slate-700 px-4 py-3 text-sm font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-                      >
-                        Crear con asistente IA
+                        Crear nota
                       </button>
                     </div>
                     <div className="mt-4 rounded-lg border border-dashed border-slate-300 dark:border-slate-700 p-3 text-xs text-slate-600 dark:text-slate-300">
