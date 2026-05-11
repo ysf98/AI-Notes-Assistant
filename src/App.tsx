@@ -79,6 +79,24 @@ function App() {
   }, [notes, query])
 
   const selectedNote = notes.find((n) => n.id === selectedId) ?? null
+  const recentNotes = filteredNotes.slice(0, 6)
+  const hasNotes = notes.length > 0
+  const hasChatContext = messages.length > 0 || isChatLoading || chatInput.trim().length > 0 || mobilePanel === 'chat'
+  const showNotesPanel = hasNotes
+  const showChatPanel = hasChatContext
+
+  const mobilePanels = [
+    ...(showNotesPanel ? ([{ value: 'notes', label: 'Notes' }] as const) : []),
+    { value: 'editor' as const, label: 'Editor' },
+    ...(showChatPanel ? ([{ value: 'chat', label: 'Assistant' }] as const) : []),
+  ]
+
+  useEffect(() => {
+    const isCurrentPanelAvailable = mobilePanels.some((panel) => panel.value === mobilePanel)
+    if (!isCurrentPanelAvailable) {
+      setMobilePanel('editor')
+    }
+  }, [mobilePanel, mobilePanels])
 
   const upsertNote = (note: Note) => {
     const next = { ...note, updatedAt: new Date().toISOString() }
@@ -183,6 +201,11 @@ function App() {
     localStorage.setItem(onboardingKey, 'true')
   }
 
+  const startAiNoteFlow = () => {
+    setMobilePanel('chat')
+    setChatInput((prev) => (prev.trim() ? prev : 'Crea una nota profesional sobre '))
+  }
+
   return (
     <main className="min-h-screen bg-slate-300 dark:bg-slate-950 transition-colors duration-300">
       <Toaster richColors position="top-right" />
@@ -218,20 +241,37 @@ function App() {
             {theme === 'dark' ? 'Light mode' : 'Dark mode'}
           </button>
         </div>
-        <div className="mt-3 flex md:hidden rounded-lg border border-slate-300 dark:border-slate-700 p-1 gap-1 bg-slate-50 dark:bg-slate-900 w-full">
-          {(['notes', 'editor', 'chat'] as const).map((panel) => (
-            <button
-              key={panel}
-              onClick={() => setMobilePanel(panel)}
-              className={`flex-1 rounded-md px-2 py-1 text-sm transition-colors ${mobilePanel === panel ? 'bg-slate-800 text-slate-100 dark:bg-slate-200 dark:text-slate-900 font-medium' : 'text-slate-600 dark:text-slate-300'}`}
-            >
-              {panel === 'notes' ? 'Notes' : panel === 'editor' ? 'Editor' : 'AI'}
-            </button>
-          ))}
+        <div className="mt-3 md:hidden">
+          <label htmlFor="mobile-view" className="sr-only">
+            Vista en móvil
+          </label>
+          <select
+            id="mobile-view"
+            value={mobilePanel}
+            onChange={(e) => setMobilePanel(e.target.value as MobilePanel)}
+            className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 px-3 py-2 text-sm text-slate-700 dark:text-slate-200"
+          >
+            {mobilePanels.map((panel) => (
+              <option key={panel.value} value={panel.value}>
+                {panel.label}
+              </option>
+            ))}
+          </select>
         </div>
       </header>
-      <div className="md:flex md:flex-row xl:grid xl:grid-cols-[20rem_1fr_24rem] min-h-[calc(100vh-120px)] bg-slate-300 dark:bg-slate-950 transition-colors duration-300">
-        <div className={`${mobilePanel === 'notes' ? 'block' : 'hidden'} md:block`}>
+      <div
+        className={`min-h-[calc(100vh-120px)] bg-slate-300 dark:bg-slate-950 transition-colors duration-300 md:flex md:flex-row ${
+          showNotesPanel && showChatPanel
+            ? 'xl:grid xl:grid-cols-[20rem_1fr_24rem]'
+            : showNotesPanel
+            ? 'xl:grid xl:grid-cols-[20rem_1fr]'
+            : showChatPanel
+            ? 'xl:grid xl:grid-cols-[1fr_24rem]'
+            : ''
+        }`}
+      >
+        {showNotesPanel ? (
+          <div className={`${mobilePanel === 'notes' ? 'block' : 'hidden'} md:block`}>
           <NotesSidebar
             notes={filteredNotes}
             selectedId={selectedId}
@@ -246,13 +286,75 @@ function App() {
             onDelete={deleteNote}
             onClearSearch={() => setQuery('')}
           />
-        </div>
+          </div>
+        ) : null}
         <div className={`${mobilePanel === 'editor' ? 'block' : 'hidden'} md:block`}>
-          <NoteEditor note={selectedNote} onChange={upsertNote} />
+          {selectedNote ? (
+            <NoteEditor note={selectedNote} onChange={upsertNote} />
+          ) : (
+            <section className="p-4 sm:p-6 h-full">
+              <div className="h-full rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 backdrop-blur-sm p-5 sm:p-6">
+                <div className="mb-6">
+                  <p className="text-xs uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">Workspace</p>
+                  <h2 className="mt-2 text-2xl font-semibold text-slate-900 dark:text-slate-100">No hay una nota abierta</h2>
+                  <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">Selecciona una nota existente o crea una nueva desde aquí para empezar a trabajar.</p>
+                </div>
+                <div className="grid gap-4 lg:grid-cols-2">
+                  <article className="rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-950/70 p-4">
+                    <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100">Notas existentes</h3>
+                    <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">Acceso rápido a tus notas más recientes.</p>
+                    <div className="mt-3 space-y-2 max-h-[320px] overflow-y-auto pr-1">
+                      {isLoadingNotes ? (
+                        <p className="text-sm text-slate-500 dark:text-slate-400">Cargando notas...</p>
+                      ) : recentNotes.length === 0 ? (
+                        <p className="text-sm text-slate-500 dark:text-slate-400">Aún no tienes notas creadas.</p>
+                      ) : (
+                        recentNotes.map((note) => (
+                          <button
+                            key={note.id}
+                            onClick={() => setSelectedId(note.id)}
+                            className="w-full text-left rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 hover:border-slate-400 dark:hover:border-slate-500 transition-colors"
+                          >
+                            <p className="text-sm font-medium text-slate-900 dark:text-slate-100 truncate">{note.title || 'Sin titulo'}</p>
+                            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400 truncate">
+                              {note.category} • {note.date || 'Sin fecha'}
+                            </p>
+                          </button>
+                        ))
+                      )}
+                    </div>
+                  </article>
+                  <article className="rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-950/70 p-4 flex flex-col">
+                    <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100">Crear nueva nota</h3>
+                    <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">Elige tu flujo de trabajo y empieza en segundos.</p>
+                    <div className="mt-4 space-y-3">
+                      <button
+                        onClick={() => createNote()}
+                        className="w-full rounded-lg bg-slate-800 px-4 py-3 text-sm font-medium text-slate-100 hover:bg-slate-700 dark:bg-slate-200 dark:text-slate-900 dark:hover:bg-slate-300 transition-colors"
+                      >
+                        Crear nota manual
+                      </button>
+                      <button
+                        onClick={startAiNoteFlow}
+                        className="w-full rounded-lg border border-slate-300 dark:border-slate-700 px-4 py-3 text-sm font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                      >
+                        Crear con asistente IA
+                      </button>
+                    </div>
+                    <div className="mt-4 rounded-lg border border-dashed border-slate-300 dark:border-slate-700 p-3 text-xs text-slate-600 dark:text-slate-300">
+                      Consejo: también puedes seleccionar una nota desde la columna izquierda y pedir al asistente que la resuma, mejore o convierta en tareas.
+                    </div>
+                  </article>
+                </div>
+              </div>
+            </section>
+          )}
         </div>
-        <div className={`${mobilePanel === 'chat' ? 'block' : 'hidden'} md:block`}>
-          <ChatPanel messages={messages} value={chatInput} isLoading={isChatLoading} onChange={setChatInput} onSend={sendCommand} />
-        </div>
+        {showChatPanel ? (
+          <div className={`${mobilePanel === 'chat' ? 'block' : 'hidden'} md:block`}>
+            <ChatPanel messages={messages} value={chatInput} isLoading={isChatLoading} onChange={setChatInput} onSend={sendCommand} />
+          </div>
+        ) : null}
       </div>
     </main>
   )
