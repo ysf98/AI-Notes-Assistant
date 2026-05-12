@@ -26,7 +26,8 @@ export const initialMockNotes: Note[] = [
   {
     id: 'mock-note-3',
     title: 'Ideas para mejorar la app',
-    content: 'Añadir modo colaborativo. Mejorar búsqueda por etiquetas. Integrar sugerencias inteligentes basadas en contexto.',
+    content:
+      'Añadir modo colaborativo. Mejorar búsqueda por etiquetas. Integrar sugerencias inteligentes basadas en contexto.',
     category: 'Ideas',
     date: today,
     createdAt: new Date().toISOString(),

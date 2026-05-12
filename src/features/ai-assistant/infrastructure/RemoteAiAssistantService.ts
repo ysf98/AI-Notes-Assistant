@@ -7,7 +7,10 @@ export class RemoteAiAssistantService implements AiAssistantService {
     const response = await fetch('/api/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ message: instruction, note: { title: context.selectedNoteTitle, content: context.selectedNoteContent } }),
+      body: JSON.stringify({
+        message: instruction,
+        note: { title: context.selectedNoteTitle, content: context.selectedNoteContent },
+      }),
     })
 
     if (!response.ok) throw new Error('AI assistant endpoint failed')

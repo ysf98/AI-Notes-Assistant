@@ -127,7 +127,19 @@ npm run test:coverage
 npm run lint
 ```
 
-## 10) Despliegue
+## 10) Quality checks
+
+```bash
+npm run lint
+npm run lint:fix
+npm run format
+npm run format:check
+npm run test
+npm run build
+npm run check
+```
+
+## 11) Despliegue
 
 En Vercel:
 
@@ -136,14 +148,14 @@ En Vercel:
 3. Deploy.
 4. Verifica `POST /api/chat`.
 
-## 11) Troubleshooting
+## 12) Troubleshooting
 
 - `Server misconfigured`: falta `OPENAI_API_KEY` en el deploy.
 - `AI service unavailable (502)`: fallo aguas arriba del proveedor IA.
 - Si no hay Supabase configurado, la app entra automaticamente en fallback localStorage.
 - Primera llamada al chatbot puede tardar por cold start serverless.
 
-## 12) Calidad y tests
+## 13) Calidad y tests
 
 La suite cubre:
 
@@ -152,7 +164,7 @@ La suite cubre:
 - fallback a localStorage cuando Supabase no esta configurado,
 - creacion de nota desde chatbot persistida en repositorio.
 
-## 13) UI/UX improvements
+## 14) UI/UX improvements
 
 - Dark mode y light mode con toggle persistido en localStorage.
 - Skeleton loaders para carga de notas y respuesta del chatbot.

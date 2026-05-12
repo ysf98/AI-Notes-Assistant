@@ -14,7 +14,19 @@ const sampleNote: Note = {
 
 const createSupabaseMock = () => {
   const select = vi.fn().mockReturnThis()
-  const order = vi.fn().mockResolvedValue({ data: [{ id: 'supa-1', title: 'Supa', content: 'Desde DB', category: 'Ideas', created_at: '2026-05-08T10:00:00.000Z', updated_at: '2026-05-08T11:00:00.000Z' }], error: null })
+  const order = vi.fn().mockResolvedValue({
+    data: [
+      {
+        id: 'supa-1',
+        title: 'Supa',
+        content: 'Desde DB',
+        category: 'Ideas',
+        created_at: '2026-05-08T10:00:00.000Z',
+        updated_at: '2026-05-08T11:00:00.000Z',
+      },
+    ],
+    error: null,
+  })
   const insert = vi.fn().mockResolvedValue({ error: null })
   const update = vi.fn().mockReturnValue({ eq: vi.fn().mockResolvedValue({ error: null }) })
   const del = vi.fn().mockReturnValue({ eq: vi.fn().mockResolvedValue({ error: null }) })
@@ -29,7 +41,7 @@ describe('notesRepository', () => {
 
     const repository = createNotesRepository({
       isConfigured: () => true,
-      getClient: () => ({ from: supabase.from } as never),
+      getClient: () => ({ from: supabase.from }) as never,
       loadLocal: () => [],
       saveLocal,
     })
@@ -44,7 +56,7 @@ describe('notesRepository', () => {
     const supabase = createSupabaseMock()
     const repository = createNotesRepository({
       isConfigured: () => true,
-      getClient: () => ({ from: supabase.from } as never),
+      getClient: () => ({ from: supabase.from }) as never,
       loadLocal: () => [],
       saveLocal: vi.fn(),
     })
@@ -58,7 +70,7 @@ describe('notesRepository', () => {
     const supabase = createSupabaseMock()
     const repository = createNotesRepository({
       isConfigured: () => true,
-      getClient: () => ({ from: supabase.from } as never),
+      getClient: () => ({ from: supabase.from }) as never,
       loadLocal: () => [],
       saveLocal: vi.fn(),
     })
@@ -72,7 +84,7 @@ describe('notesRepository', () => {
     const supabase = createSupabaseMock()
     const repository = createNotesRepository({
       isConfigured: () => true,
-      getClient: () => ({ from: supabase.from } as never),
+      getClient: () => ({ from: supabase.from }) as never,
       loadLocal: () => [],
       saveLocal: vi.fn(),
     })

@@ -75,7 +75,17 @@ describe('app ui behaviors', () => {
   it('toast al crear y eliminar nota', async () => {
     const user = userEvent.setup()
     repositoryMock.load.mockResolvedValue({
-      notes: [{ id: 'n1', title: 'Inicial', content: 'x', category: 'General', date: '2026-05-08', createdAt: '2026-05-08T00:00:00.000Z', updatedAt: '2026-05-08T00:00:00.000Z' }],
+      notes: [
+        {
+          id: 'n1',
+          title: 'Inicial',
+          content: 'x',
+          category: 'General',
+          date: '2026-05-08',
+          createdAt: '2026-05-08T00:00:00.000Z',
+          updatedAt: '2026-05-08T00:00:00.000Z',
+        },
+      ],
       mode: 'localStorage',
     })
     render(<App />)

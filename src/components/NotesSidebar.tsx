@@ -23,13 +23,27 @@ const NotesSkeleton = () => (
   </div>
 )
 
-export const NotesSidebar = ({ notes, selectedId, query, isLoading, onQueryChange, onSelect, onCreate, onDelete, onClearSearch }: NotesSidebarProps) => (
+export const NotesSidebar = ({
+  notes,
+  selectedId,
+  query,
+  isLoading,
+  onQueryChange,
+  onSelect,
+  onCreate,
+  onDelete,
+  onClearSearch,
+}: NotesSidebarProps) => (
   <aside className="w-full lg:w-80 border-r border-slate-200 dark:border-slate-800 p-4 bg-slate-300 dark:bg-slate-950 transition-colors duration-300">
     <div className="h-full rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 backdrop-blur-sm p-4 space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <p className="text-xs uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">Notes</p>
-          <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">{notes.length} disponibles</p>
+          <p className="text-xs uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">
+            Notes
+          </p>
+          <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+            {notes.length} disponibles
+          </p>
         </div>
         <button
           aria-label="Nueva nota"
@@ -56,8 +70,13 @@ export const NotesSidebar = ({ notes, selectedId, query, isLoading, onQueryChang
         ) : null}
         {!isLoading && notes.length === 0 && query ? (
           <div className="card-ui p-4 text-sm text-slate-600 dark:text-slate-300">
-            <p className="font-medium text-slate-900 dark:text-slate-100">No se encontraron resultados</p>
-            <button className="mt-2 text-slate-700 dark:text-slate-300 hover:underline" onClick={onClearSearch}>
+            <p className="font-medium text-slate-900 dark:text-slate-100">
+              No se encontraron resultados
+            </p>
+            <button
+              className="mt-2 text-slate-700 dark:text-slate-300 hover:underline"
+              onClick={onClearSearch}
+            >
               Limpiar búsqueda
             </button>
           </div>
@@ -74,7 +93,9 @@ export const NotesSidebar = ({ notes, selectedId, query, isLoading, onQueryChang
               onClick={() => onSelect(note.id)}
             >
               <div className="flex items-start justify-between gap-2">
-                <h3 className="font-semibold text-slate-900 dark:text-slate-100 truncate">{note.title || 'Sin titulo'}</h3>
+                <h3 className="font-semibold text-slate-900 dark:text-slate-100 truncate">
+                  {note.title || 'Sin titulo'}
+                </h3>
                 <button
                   aria-label={`Borrar ${note.title || note.id}`}
                   onClick={(e) => {

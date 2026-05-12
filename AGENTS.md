@@ -3,13 +3,16 @@
 Guía para colaboradores humanos y agentes en **AI Notes Assistant**.
 
 ## 1) Propósito del proyecto
+
 AI Notes Assistant es una aplicación de **notas + asistente conversacional** con foco en:
+
 - Productividad personal (captura, edición, búsqueda y organización de notas).
 - Asistencia con IA para automatizar tareas sobre notas.
 - Privacidad-first con ejecución local del frontend y control explícito de integraciones externas.
 - Código mantenible y evolutivo.
 
 Estado funcional actual:
+
 - Gestión completa de notas (crear, editar, eliminar, buscar).
 - Chat con comandos de productividad sobre notas.
 - Persistencia remota con Supabase (cuando está configurado).
@@ -20,6 +23,7 @@ Estado funcional actual:
 ## 2) Reglas de arquitectura (Clean Architecture)
 
 ### 2.1 Principios base
+
 - Mantener separación estricta por capas:
   - **Dominio**: entidades, value objects, reglas de negocio puras.
   - **Aplicación**: casos de uso/orquestación (sin framework).
@@ -30,6 +34,7 @@ Estado funcional actual:
 - Cada caso de uso debe tener una única responsabilidad y contratos explícitos (interfaces/puertos).
 
 ### 2.2 Reglas de diseño
+
 - Preferir composición sobre herencia.
 - Evitar singletons globales no controlados.
 - Definir DTOs claros entre capas; no filtrar modelos de infraestructura al dominio.
@@ -37,6 +42,7 @@ Estado funcional actual:
 - Manejo de errores consistente: errores de dominio tipados, sin ocultar fallos críticos.
 
 ### 2.3 Estructura real del proyecto (actual)
+
 Mantener esta organización como referencia al añadir nuevas features:
 
 - `src/domain/*` → modelos y reglas de dominio (`note`, `chat`).
@@ -52,6 +58,7 @@ Mantener esta organización como referencia al añadir nuevas features:
 - `src/test/unit/*` y `src/test/integration/*` → cobertura actual de pruebas.
 
 Regla clave:
+
 - La UI no debe hablar directamente con Supabase ni con OpenAI; debe hacerlo a través de servicios/repositorios de infraestructura y contratos de aplicación.
 
 ---
@@ -59,17 +66,20 @@ Regla clave:
 ## 3) Reglas de testing
 
 ### 3.1 Pirámide de pruebas
+
 - **Unit tests** (mayoría): dominio, parser IA, repositorios y componentes aislados.
 - **Integration tests**: flujos de app que integran UI + persistencia/servicios.
 - **E2E tests**: recomendados para flujos críticos de usuario (pendiente de ampliación formal).
 
 ### 3.2 Criterios mínimos
+
 - Cada feature nueva debe incluir pruebas.
 - Cada bugfix debe incluir al menos una prueba de regresión.
 - No hacer merge si hay pruebas rotas.
 - Evitar flaky tests: controlar seeds, tiempos y dependencias externas.
 
 ### 3.3 Buenas prácticas
+
 - Arrange-Act-Assert explícito.
 - Nombres de tests descriptivos y orientados a comportamiento.
 - Mockear solo bordes externos (red, DB, almacenamiento, APIs).
@@ -81,18 +91,21 @@ Regla clave:
 ## 4) Reglas de calidad
 
 ### 4.1 Código
+
 - Funciones pequeñas y cohesivas.
 - Nombres semánticos (sin abreviaturas ambiguas).
 - Evitar duplicación; extraer utilidades cuando sea recurrente.
 - Comentarios solo cuando añadan contexto de negocio o decisiones no obvias.
 
 ### 4.2 Revisiones y cambios
+
 - PRs pequeños y enfocados.
 - Incluir contexto: problema, solución, trade-offs y riesgos.
 - Actualizar documentación cuando cambie comportamiento visible.
 - Si se toca arquitectura, justificar impacto en capas y contratos.
 
 ### 4.3 Seguridad y privacidad
+
 - No registrar secretos ni contenido sensible en logs.
 - Proteger datos de notas del usuario (principio de mínimo acceso).
 - Validar y sanitizar entradas antes de persistir o procesar.
@@ -108,6 +121,7 @@ Regla clave:
   - No permitido: `yarn.lock`, `pnpm-lock.yaml`, `bun.lockb`
 
 Scripts actuales del proyecto:
+
 - `npm run dev`
 - `npm run build`
 - `npm run preview`
@@ -118,6 +132,7 @@ Scripts actuales del proyecto:
 - `npm run format`
 
 Antes de abrir PR, ejecutar como mínimo:
+
 - `npm ci`
 - `npm run lint`
 - `npm run test`
@@ -128,6 +143,7 @@ Antes de abrir PR, ejecutar como mínimo:
 ## 6) Configuración y entorno
 
 Variables esperadas:
+
 - Frontend (públicas):
   - `VITE_SUPABASE_URL`
   - `VITE_SUPABASE_ANON_KEY`
@@ -139,13 +155,16 @@ Variables esperadas:
   - `OPENAI_MAX_NOTE_CHARS`
 
 Reglas:
+
 - Si Supabase no está configurado, mantener funcionamiento por fallback local.
 - No romper compatibilidad con `localStorage` salvo cambio explícito de arquitectura.
 
 ---
 
 ## 7) Definición de Done (DoD)
+
 Una tarea está terminada cuando:
+
 1. Cumple arquitectura limpia y separación de capas.
 2. Incluye pruebas adecuadas y en verde.
 3. Pasa `lint`/`build`/`test` sin errores.
@@ -156,6 +175,7 @@ Una tarea está terminada cuando:
 ---
 
 ## 8) Convención para agentes
+
 - No hacer cambios masivos sin justificación.
 - Explicar decisiones técnicas de forma breve en el PR.
 - Priorizar mantenibilidad sobre atajos.

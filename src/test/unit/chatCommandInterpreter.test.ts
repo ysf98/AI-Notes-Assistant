@@ -3,7 +3,13 @@ import { interpretCommand } from '../../application/chatCommandInterpreter'
 import type { Note } from '../../domain/note'
 
 const note: Note = {
-  id: '1', title: 'Demo', content: 'Primera frase. Segunda frase. Tercera frase.', category: 'General', date: '2026-05-07', createdAt: '', updatedAt: ''
+  id: '1',
+  title: 'Demo',
+  content: 'Primera frase. Segunda frase. Tercera frase.',
+  category: 'General',
+  date: '2026-05-07',
+  createdAt: '',
+  updatedAt: '',
 }
 
 describe('chatCommandInterpreter', () => {

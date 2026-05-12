@@ -1,6 +1,9 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Note } from '../../domain/note'
-import { loadNotes as loadLocalNotes, saveNotes as saveLocalNotes } from './localStorageNotesRepository'
+import {
+  loadNotes as loadLocalNotes,
+  saveNotes as saveLocalNotes,
+} from './localStorageNotesRepository'
 import { getSupabaseClient, isSupabaseConfigured } from '../supabase/client'
 
 type StorageMode = 'supabase' | 'localStorage'

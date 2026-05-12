@@ -8,7 +8,7 @@ describe('App AI integration', () => {
     const user = userEvent.setup()
     render(<App />)
 
-    await user.click(screen.getByRole('button', { name: 'Crear nota manual' }))
+    await user.click(screen.getAllByRole('button', { name: 'Crear nota' })[0])
     const chatInput = screen.getByLabelText('Comando del asistente')
     await user.type(chatInput, 'Crea una nota sobre TypeScript')
     await user.click(screen.getByRole('button', { name: 'Enviar comando' }))
@@ -20,7 +20,7 @@ describe('App AI integration', () => {
     const user = userEvent.setup()
     render(<App />)
 
-    await user.click(screen.getByRole('button', { name: 'Crear nota manual' }))
+    await user.click(screen.getAllByRole('button', { name: 'Crear nota' })[0])
     await user.type(screen.getByLabelText(/Titulo/i), 'Base')
     const chatInput = screen.getByLabelText('Comando del asistente')
     await user.type(chatInput, 'Edita esta nota')

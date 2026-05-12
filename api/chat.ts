@@ -50,11 +50,13 @@ const parsePositiveInt = (value: string | undefined, fallback: number): number =
   return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback
 }
 
-const clampText = (value: string, maxChars: number): string => (value.length > maxChars ? value.slice(0, maxChars) : value)
+const clampText = (value: string, maxChars: number): string =>
+  value.length > maxChars ? value.slice(0, maxChars) : value
 
 const getEnv = (key: string): string | undefined => {
   try {
-    const env = (globalThis as { process?: { env?: Record<string, string | undefined> } }).process?.env
+    const env = (globalThis as { process?: { env?: Record<string, string | undefined> } }).process
+      ?.env
     if (!env) return undefined
     return env[key]
   } catch {
@@ -67,7 +69,8 @@ const extractOutputText = (data: OpenAiResponsesSuccess): string | null => {
 
   for (const item of data.output ?? []) {
     for (const part of item.content ?? []) {
-      if (part.type === 'output_text' && typeof part.text === 'string' && part.text.trim()) return part.text
+      if (part.type === 'output_text' && typeof part.text === 'string' && part.text.trim())
+        return part.text
     }
   }
 
@@ -79,28 +82,53 @@ const shouldRetryWithFallback = (status: number, errorData: OpenAiErrorResponse)
   return status === 404 || message.includes('model') || errorData.error?.code === 'model_not_found'
 }
 
-const isObject = (value: unknown): value is Record<string, unknown> => Boolean(value) && typeof value === 'object' && !Array.isArray(value)
+const isObject = (value: unknown): value is Record<string, unknown> =>
+  Boolean(value) && typeof value === 'object' && !Array.isArray(value)
 
 const parseAiResponse = (payload: unknown): ApiResponse => {
-  if (!isObject(payload) || typeof payload.action !== 'string') return { action: 'unknown', message: 'Invalid AI response' }
+  if (!isObject(payload) || typeof payload.action !== 'string')
+    return { action: 'unknown', message: 'Invalid AI response' }
 
   switch (payload.action) {
     case 'create_note':
-      if (typeof payload.title !== 'string' || typeof payload.content !== 'string' || typeof payload.category !== 'string' || !categories.includes(payload.category as NoteCategory)) return { action: 'unknown', message: 'Invalid create_note response' }
-      return { action: 'create_note', title: payload.title, content: payload.content, category: payload.category as NoteCategory }
+      if (
+        typeof payload.title !== 'string' ||
+        typeof payload.content !== 'string' ||
+        typeof payload.category !== 'string' ||
+        !categories.includes(payload.category as NoteCategory)
+      )
+        return { action: 'unknown', message: 'Invalid create_note response' }
+      return {
+        action: 'create_note',
+        title: payload.title,
+        content: payload.content,
+        category: payload.category as NoteCategory,
+      }
     case 'summarize_note':
-      return typeof payload.summary === 'string' ? { action: 'summarize_note', summary: payload.summary } : { action: 'unknown', message: 'Invalid summarize_note response' }
+      return typeof payload.summary === 'string'
+        ? { action: 'summarize_note', summary: payload.summary }
+        : { action: 'unknown', message: 'Invalid summarize_note response' }
     case 'convert_to_tasks':
-      return Array.isArray(payload.tasks) && payload.tasks.every((task) => typeof task === 'string') ? { action: 'convert_to_tasks', tasks: payload.tasks } : { action: 'unknown', message: 'Invalid convert_to_tasks response' }
+      return Array.isArray(payload.tasks) && payload.tasks.every((task) => typeof task === 'string')
+        ? { action: 'convert_to_tasks', tasks: payload.tasks }
+        : { action: 'unknown', message: 'Invalid convert_to_tasks response' }
     case 'suggest_title':
-      return typeof payload.title === 'string' ? { action: 'suggest_title', title: payload.title } : { action: 'unknown', message: 'Invalid suggest_title response' }
+      return typeof payload.title === 'string'
+        ? { action: 'suggest_title', title: payload.title }
+        : { action: 'unknown', message: 'Invalid suggest_title response' }
     case 'classify_note':
-      return typeof payload.category === 'string' && categories.includes(payload.category as NoteCategory) ? { action: 'classify_note', category: payload.category as NoteCategory } : { action: 'unknown', message: 'Invalid classify_note response' }
+      return typeof payload.category === 'string' &&
+        categories.includes(payload.category as NoteCategory)
+        ? { action: 'classify_note', category: payload.category as NoteCategory }
+        : { action: 'unknown', message: 'Invalid classify_note response' }
     case 'edit_note': {
       const hasTitle = typeof payload.title === 'string'
       const hasContent = typeof payload.content === 'string'
-      const hasCategory = typeof payload.category === 'string' && categories.includes(payload.category as NoteCategory)
-      if (!hasTitle && !hasContent && !hasCategory) return { action: 'unknown', message: 'Invalid edit_note response' }
+      const hasCategory =
+        typeof payload.category === 'string' &&
+        categories.includes(payload.category as NoteCategory)
+      if (!hasTitle && !hasContent && !hasCategory)
+        return { action: 'unknown', message: 'Invalid edit_note response' }
       return {
         action: 'edit_note',
         ...(hasTitle ? { title: payload.title as string } : {}),
@@ -109,13 +137,18 @@ const parseAiResponse = (payload: unknown): ApiResponse => {
       }
     }
     case 'unknown':
-      return typeof payload.message === 'string' ? { action: 'unknown', message: payload.message } : { action: 'unknown', message: 'Invalid unknown response' }
+      return typeof payload.message === 'string'
+        ? { action: 'unknown', message: payload.message }
+        : { action: 'unknown', message: 'Invalid unknown response' }
     default:
       return { action: 'unknown', message: 'Unsupported AI action' }
   }
 }
 
-export default async function handler(req: { method?: string; body?: ChatRequestBody }, res: { status: (n: number) => { json: (v: unknown) => void } }) {
+export default async function handler(
+  req: { method?: string; body?: ChatRequestBody },
+  res: { status: (n: number) => { json: (v: unknown) => void } }
+) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' })
 
   const model = getEnv('OPENAI_MODEL') ?? DEFAULT_MODEL
@@ -142,7 +175,10 @@ export default async function handler(req: { method?: string; body?: ChatRequest
           max_output_tokens: maxOutputTokens,
           input: [
             { role: 'system', content: [{ type: 'input_text', text: systemPrompt }] },
-            { role: 'user', content: [{ type: 'input_text', text: `Message: ${message}\nNote: ${noteContent}` }] },
+            {
+              role: 'user',
+              content: [{ type: 'input_text', text: `Message: ${message}\nNote: ${noteContent}` }],
+            },
           ],
         }),
       })
@@ -158,7 +194,8 @@ export default async function handler(req: { method?: string; body?: ChatRequest
       }
     }
 
-    if (!openAiResponse.ok) return res.status(502).json({ action: 'unknown', message: 'AI service unavailable' })
+    if (!openAiResponse.ok)
+      return res.status(502).json({ action: 'unknown', message: 'AI service unavailable' })
 
     const data = (await openAiResponse.json()) as OpenAiResponsesSuccess
     const outputText = extractOutputText(data) ?? '{"action":"unknown","message":"No response"}'

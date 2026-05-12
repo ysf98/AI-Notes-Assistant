@@ -4,7 +4,17 @@ import type { Note } from '../../domain/note'
 
 describe('localStorageNotesRepository', () => {
   it('guarda y carga notas', () => {
-    const notes: Note[] = [{ id:'a', title:'t', content:'c', category:'General', date:'2026-05-07', createdAt:'x', updatedAt:'x' }]
+    const notes: Note[] = [
+      {
+        id: 'a',
+        title: 't',
+        content: 'c',
+        category: 'General',
+        date: '2026-05-07',
+        createdAt: 'x',
+        updatedAt: 'x',
+      },
+    ]
     saveNotes(notes)
     expect(loadNotes()[0].id).toBe('a')
   })

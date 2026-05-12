@@ -8,13 +8,23 @@ interface NoteEditorProps {
   hasUnsavedChanges: boolean
 }
 
-export const NoteEditor = ({ note, onChange, onSave, onBack, hasUnsavedChanges }: NoteEditorProps) => {
+export const NoteEditor = ({
+  note,
+  onChange,
+  onSave,
+  onBack,
+  hasUnsavedChanges,
+}: NoteEditorProps) => {
   if (!note) {
     return (
       <section className="flex-1 grid place-items-center p-6">
         <div className="card-ui p-6 max-w-md text-center">
-          <p className="text-lg font-semibold text-slate-900 dark:text-slate-100">No note selected</p>
-          <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">Create your first note or ask AI to generate a note.</p>
+          <p className="text-lg font-semibold text-slate-900 dark:text-slate-100">
+            No note selected
+          </p>
+          <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">
+            Create your first note or ask AI to generate a note.
+          </p>
         </div>
       </section>
     )
