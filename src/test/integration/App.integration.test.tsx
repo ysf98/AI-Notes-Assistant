@@ -8,7 +8,7 @@ describe('App integration', () => {
     const user = userEvent.setup()
     render(<App />)
     await waitFor(() => {
-      expect(screen.queryByText('Cargando notas...')).not.toBeInTheDocument()
+      expect(screen.queryAllByText('Cargando notas...')).toHaveLength(0)
     })
 
     await user.click(screen.getByRole('button', { name: 'Nueva nota' }))
@@ -26,7 +26,7 @@ describe('App integration', () => {
     const user = userEvent.setup()
     render(<App />)
     await waitFor(() => {
-      expect(screen.queryByText('Cargando notas...')).not.toBeInTheDocument()
+      expect(screen.queryAllByText('Cargando notas...')).toHaveLength(0)
     })
     await user.type(screen.getByLabelText('Comando del asistente'), 'crea una nota sobre React')
     await user.click(screen.getByRole('button', { name: 'Enviar comando' }))
@@ -37,7 +37,7 @@ describe('App integration', () => {
     const user = userEvent.setup()
     render(<App />)
     await waitFor(() => {
-      expect(screen.queryByText('Cargando notas...')).not.toBeInTheDocument()
+      expect(screen.queryAllByText('Cargando notas...')).toHaveLength(0)
     })
     const before = screen.getAllByText('Borrar').length
     await user.click(screen.getAllByText('Borrar')[0])
